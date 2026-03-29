@@ -34,6 +34,7 @@ const TEMPLATES = [
     description: 'Everyday cleaning and tidying for the whole house',
     color: '#34d399',   // mint
     emoji: '🧹',
+    recur_type: 'daily',
     items: [
       { title: 'Mag-walis ng lahat ng kwarto at sala (sweep all rooms)',   category: 'cleaning', estimated_mins: 20, sort_order: 1 },
       { title: 'Mag-mop ng kitchen at comfort room floors',               category: 'cleaning', estimated_mins: 15, sort_order: 2 },
@@ -54,6 +55,7 @@ const TEMPLATES = [
     description: 'Thorough weekly cleaning of the whole house',
     color: '#60a5fa',   // blue
     emoji: '🪣',
+    recur_type: 'weekly',
     items: [
       { title: 'Deep clean CR — floor tiles, toilet, shower area, mirror', category: 'cleaning',  estimated_mins: 30, sort_order: 1 },
       { title: 'Banlawan ang mga floor rugs at doormat',                  category: 'laundry',   estimated_mins: 20, sort_order: 2 },
@@ -76,6 +78,7 @@ const TEMPLATES = [
     description: 'Newborn care routine — sterilizing, feeding prep, and keeping baby\'s area clean',
     color: '#f9a8d4',   // blush/pink
     emoji: '👶',
+    recur_type: 'daily',
     items: [
       { title: 'I-sterilize ang lahat ng baby bottles at pacifiers',       category: 'other',  estimated_mins: 20, sort_order: 1 },
       { title: 'I-clean at i-sterilize ang breast pump parts',             category: 'other',  estimated_mins: 15, sort_order: 2 },
@@ -96,6 +99,7 @@ const TEMPLATES = [
     description: 'Weekly deeper baby care — crib sheets, stock check, and organization',
     color: '#c4b5fd',   // lavender
     emoji: '🍼',
+    recur_type: 'weekly',
     items: [
       { title: 'Palitan ng crib sheet at changing pad cover',              category: 'other',  estimated_mins: 15, sort_order: 1 },
       { title: 'I-check at i-restock ang baby essentials (diapers, wipes, formula/breastmilk bags)', category: 'other', estimated_mins: 10, sort_order: 2 },
@@ -149,6 +153,7 @@ async function seed() {
         color:       tmpl.color,
         emoji:       tmpl.emoji,
         created_by:  adminId,
+        recur_type:  tmpl.recur_type ?? 'none',
       })
       .select('id')
       .single()

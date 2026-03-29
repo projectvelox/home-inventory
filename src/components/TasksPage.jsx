@@ -141,6 +141,17 @@ function CompletionSheet({ task, onDone, onClose }) {
           </div>
         </div>
 
+        {/* Recurring hint */}
+        {task.recurType && task.recurType !== 'none' && (
+          <div className="flex items-center gap-2 mb-3 px-3 py-2.5 rounded-xl bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/20">
+            <span className="text-base">🔁</span>
+            <p className="font-sans text-xs text-sky-600 dark:text-sky-400">
+              <span className="font-semibold">{RECUR_META[task.recurType]?.label ?? 'Recurring'}</span>
+              {task.recurType === 'daily' ? ' — will auto-appear again tomorrow.' : ' — will auto-appear again next week.'}
+            </p>
+          </div>
+        )}
+
         {/* PRIMARY action — always visible and prominent */}
         <button
           onClick={handleSubmit}
@@ -1301,7 +1312,9 @@ export default function TasksPage({ user, showToast }) {
     if (!loading && isAdmin && templates.length > 0 && !autoAssignRan.current) {
       autoAssignRan.current = true
       const firstHelperId = helperProfiles[0]?.id ?? null
-      autoAssignDueTemplates(firstHelperId)
+      autoAssignDueTemplates(firstHelperId).then(({ assigned } = {}) => {
+        if (assigned > 0) showToast(`🔁 Auto-assigned ${assigned} recurring template${assigned !== 1 ? 's' : ''} for today`)
+      })
     }
   }, [loading, isAdmin, templates.length])
 

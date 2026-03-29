@@ -323,7 +323,7 @@ export function useTasks(userId, role) {
   // Auto-assign any recurring templates that are due today/this week but not yet assigned.
   // Called once after initial load (admin only). Silently creates tasks — no UI needed.
   async function autoAssignDueTemplates(helperIdFallback) {
-    if (role !== 'admin') return
+    if (role !== 'admin') return { assigned: 0 }
     const today = localToday()
     // Monday of this week (for weekly recurrence)
     const now   = new Date()
@@ -331,6 +331,7 @@ export function useTasks(userId, role) {
     monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
     const weekStart = monday.toISOString().slice(0, 10)
 
+    let assigned = 0
     for (const tmpl of templates) {
       if (!tmpl.recurType || tmpl.recurType === 'none') continue
 
@@ -347,7 +348,7 @@ export function useTasks(userId, role) {
       // Find a helper to assign to — use first helper profile or leave unassigned
       const assignTo = helperIdFallback ?? null
 
-      await supabase.from('tasks').insert(
+      const { error } = await supabase.from('tasks').insert(
         tmpl.items.map((item, idx) => ({
           title:          item.title,
           description:    item.description    || null,
@@ -362,8 +363,10 @@ export function useTasks(userId, role) {
           recur_type:     tmpl.recurType,
         }))
       )
+      if (!error) assigned++
     }
     await loadTasks()
+    return { assigned }
   }
 
   return {

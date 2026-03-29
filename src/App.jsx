@@ -226,7 +226,7 @@ function HelperSidebar({ user, onLogout, dark, onToggleDark }) {
     <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-[220px] bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-20">
       <div className="px-6 pt-7 pb-5">
         <h1 className="font-title text-[1.6rem] leading-none text-blush-400">My Home Haven</h1>
-        <p className="font-sans text-xs text-gray-400 mt-1 font-medium">Helper Dashboard</p>
+        <p className="font-sans text-xs text-gray-400 mt-1 font-medium">Member Dashboard</p>
       </div>
       <nav className="flex-1 px-3">
         <SidebarItem icon="✅" label="My Tasks" active onClick={() => {}} activeClass="bg-mint-50 dark:bg-mint-500/10 text-mint-600" />
@@ -237,7 +237,7 @@ function HelperSidebar({ user, onLogout, dark, onToggleDark }) {
           <div className="w-8 h-8 rounded-lg bg-blush-50 dark:bg-blush-500/10 flex items-center justify-center text-base">{user.avatar}</div>
           <div className="min-w-0">
             <p className="font-sans font-semibold text-sm text-gray-700 dark:text-gray-200 truncate">{user.displayName ?? user.display_name ?? ''}</p>
-            <p className="font-sans text-xs text-gray-400">Helper</p>
+            <p className="font-sans text-xs text-gray-400">Member</p>
           </div>
         </div>
         <button onClick={onToggleDark} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl font-sans text-xs font-medium text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">

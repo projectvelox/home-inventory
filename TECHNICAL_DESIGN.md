@@ -1,6 +1,6 @@
 ---
 title: "My Home Haven"
-subtitle: "Technical Design Document - v2.7.0"
+subtitle: "Technical Design Document - v2.8.0"
 author: "Development Team"
 date: "29 March 2026"
 ---
@@ -8,7 +8,7 @@ date: "29 March 2026"
 | | |
 |---|---|
 | **Project** | My Home Haven - Household Inventory PWA |
-| **Current Version** | 2.7.0 |
+| **Current Version** | 2.8.0 |
 | **Document Status** | Living Document - updated with every release |
 | **Last Updated** | 29 March 2026 |
 | **Author** | Development Team |
@@ -522,6 +522,7 @@ Created task_templates, task_template_items, and tasks tables with role-scoped R
 
 | Version | Date | Summary |
 |---------|------|---------|
+| 2.8.0 | 2026-03-29 | Rename "Helper" → "Member" in all UI labels (login screen, sidebar, member dashboard); Daddy Jo, Nene Ella, Wowa Grace promoted to admin in users.js; SQL migration + admin-override RLS policy for future role changes via script. |
 | 2.7.0 | 2026-03-29 | Iteration 25: DB recur_type patched on all 4 seeded templates (daily/weekly); seed script includes recur_type; CompletionSheet shows recurring hint banner; autoAssignDueTemplates returns assigned count and triggers admin toast. |
 | 2.6.0 | 2026-03-29 | Tasks stability pass: overdue TaskCards get red left-border accent + "X days ago" label; HelperTaskList contextual empty states per tab (today/week/month); late pending tasks in helper view flagged with ⚠️ date header; schedule tab empty-today state with template prompt. |
 | 2.5.0 | 2026-03-29 | Recurrence feature end-to-end: recurType picker in CreateTask/CreateTemplate sheets, 🔁 badge on TaskCard and template cards, auto-assign recurring templates on admin load via useEffect guard, useTasks persists recur_type to DB. Filipino household + baby care task templates seeded. |

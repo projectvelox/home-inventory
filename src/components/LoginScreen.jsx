@@ -67,7 +67,7 @@ export default function LoginScreen({ onLogin }) {
           {helpers.length > 0 && (
             <div className="flex items-center gap-2">
               <div className="flex-1 h-px bg-gray-200" />
-              <p className="font-sans text-xs font-semibold text-gray-400">Helpers</p>
+              <p className="font-sans text-xs font-semibold text-gray-400">Members</p>
               <div className="flex-1 h-px bg-gray-200" />
             </div>
           )}
@@ -85,7 +85,7 @@ export default function LoginScreen({ onLogin }) {
                 </div>
                 <div className="text-center">
                   <p className="font-sans font-semibold text-gray-700 text-sm leading-tight">{u.displayName}</p>
-                  <span className="font-sans text-[10px] text-lavender-400 font-medium">Helper</span>
+                  <span className="font-sans text-[10px] text-lavender-400 font-medium">Member</span>
                 </div>
               </button>
             ))}

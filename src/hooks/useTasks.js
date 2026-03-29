@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { localToday } from '../lib/taskUtils'
 
@@ -54,6 +54,7 @@ export function useTasks(userId, role) {
   const [templates,      setTemplates]      = useState([])
   const [helperProfiles, setHelperProfiles] = useState([])
   const [loading,        setLoading]        = useState(true)
+  const loadSeqRef = useRef(0)
 
   useEffect(() => {
     if (!userId) return
@@ -88,6 +89,7 @@ export function useTasks(userId, role) {
   }, [userId, role])
 
   async function loadTasks() {
+    const seq = ++loadSeqRef.current
     let query = supabase.from('tasks').select('*').order('sort_order').order('created_at')
     if (role === 'helper') {
       // Load 7 days back (for late completions) through 60 days ahead (for upcoming scheduled tasks)
@@ -100,15 +102,14 @@ export function useTasks(userId, role) {
         .lte('due_date', toDay.toISOString().slice(0, 10))
     }
     const { data } = await query
-    if (data) {
-      setTasks(prev => {
-        // Preserve any optimistic (temp_*) tasks that haven't been confirmed yet
-        // so that a realtime reload mid-insert doesn't wipe the optimistic update
-        const dbIds = new Set(data.map(t => t.id))
-        const pendingOptimistic = prev.filter(t => String(t.id).startsWith('temp_') && !dbIds.has(t.id))
-        return [...data.map(taskFromDB), ...pendingOptimistic]
-      })
-    }
+    if (!data || seq !== loadSeqRef.current) return  // stale result — a newer load is in flight, discard
+    setTasks(prev => {
+      // Preserve any optimistic (temp_*) tasks that haven't been confirmed yet
+      // so that a realtime reload mid-insert doesn't wipe the optimistic update
+      const dbIds = new Set(data.map(t => t.id))
+      const pendingOptimistic = prev.filter(t => String(t.id).startsWith('temp_') && !dbIds.has(t.id))
+      return [...data.map(taskFromDB), ...pendingOptimistic]
+    })
   }
 
   async function loadTemplates() {
@@ -124,14 +125,18 @@ export function useTasks(userId, role) {
     const { data, error } = await supabase
       .from('profiles')
       .select('id, display_name, avatar, role')
-      .eq('role', 'helper')
+      .order('display_name')
     if (error) { console.error('loadHelperProfiles error:', error.message, error); return }
     if (data) setHelperProfiles(data.map(p => ({
       id:          p.id,
-      displayName: p.display_name ?? 'Helper',
-      avatar:      p.avatar ?? '🧹',
+      displayName: p.display_name ?? 'User',
+      avatar:      p.avatar ?? '👤',
+      role:        p.role ?? 'helper',
     })))
   }
+
+  // Safe estimatedMins: rejects 0, negatives, NaN, non-numbers
+  function safeEstMins(v) { const n = Number(v); return Number.isFinite(n) && n > 0 ? Math.round(Math.min(n, 1440)) : null }
 
   async function createTask(taskData) {
     const tempId     = `temp_${Date.now()}`
@@ -144,8 +149,8 @@ export function useTasks(userId, role) {
       assigned_to:    taskData.assignedTo     || null,
       created_by:     userId,
       due_date:       taskData.dueDate        || localToday(),
-      estimated_mins: taskData.estimatedMins  || null,
-      sort_order:     tasks.length,
+      estimated_mins: safeEstMins(taskData.estimatedMins),
+      sort_order:     tasks.filter(t => !String(t.id).startsWith('temp_')).length,
       recur_type:     taskData.recurType      || 'none',
       recur_days:     taskData.recurDays      ?? null,
     }]).select().single()
@@ -167,30 +172,44 @@ export function useTasks(userId, role) {
   }
 
   async function completeTask(id, { photo, notes } = {}) {
+    const prevTask = tasks.find(t => t.id === id)
     const now = new Date().toISOString()
     setTasks(prev => prev.map(t => t.id === id
       ? { ...t, status: 'done', completedAt: now, completedPhoto: photo || null, completionNotes: notes || null }
       : t
     ))
-    await supabase.from('tasks').update({
+    const { error } = await supabase.from('tasks').update({
       status:           'done',
       completed_at:     now,
       completed_photo:  photo || null,
       completion_notes: notes || null,
     }).eq('id', id)
+    if (error) {
+      console.error('completeTask error:', error.message)
+      if (prevTask) setTasks(prev => prev.map(t => t.id === id ? prevTask : t))
+      return { error }
+    }
+    return { error: null }
   }
 
   async function reopenTask(id) {
+    const prevTask = tasks.find(t => t.id === id)
     setTasks(prev => prev.map(t => t.id === id
       ? { ...t, status: 'pending', completedAt: null, completedPhoto: null, completionNotes: null }
       : t
     ))
-    await supabase.from('tasks').update({
+    const { error } = await supabase.from('tasks').update({
       status:           'pending',
       completed_at:     null,
       completed_photo:  null,
       completion_notes: null,
     }).eq('id', id)
+    if (error) {
+      console.error('reopenTask error:', error.message)
+      if (prevTask) setTasks(prev => prev.map(t => t.id === id ? prevTask : t))
+      return { error }
+    }
+    return { error: null }
   }
 
   async function deleteTask(id) {
@@ -206,7 +225,7 @@ export function useTasks(userId, role) {
       category:       taskData.category       || 'other',
       assigned_to:    taskData.assignedTo     || null,
       due_date:       taskData.dueDate        || localToday(),
-      estimated_mins: taskData.estimatedMins  || null,
+      estimated_mins: safeEstMins(taskData.estimatedMins),
       recur_type:     taskData.recurType      || 'none',
       recur_days:     taskData.recurDays      ?? null,
     }).eq('id', id)

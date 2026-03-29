@@ -23,9 +23,26 @@ function ProgressBar({ done, total }) {
   )
 }
 
+// ─── Confirm Dialog (replaces browser confirm() — works in all PWA contexts) ──
+function ConfirmDialog({ message, onConfirm, onCancel, confirmLabel = 'Delete', danger = true }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-5">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onCancel} />
+      <div className="relative bg-white dark:bg-gray-900 rounded-2xl p-5 w-full max-w-xs shadow-2xl animate-fade-in">
+        <p className="font-sans font-semibold text-gray-800 dark:text-gray-100 text-center leading-snug mb-5">{message}</p>
+        <div className="flex gap-2">
+          <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-gray-500 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Cancel</button>
+          <button onClick={onConfirm} className={`flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-white transition-all ${danger ? 'bg-red-400 hover:bg-red-500' : 'bg-blush-400 hover:bg-blush-500'}`}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Task Card ────────────────────────────────────────────────
 function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone, isOverdue }) {
-  const meta     = catMeta(task.category)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const meta     = catMeta(task.category || 'other')
   const isDone   = task.status === 'done'
   const doneTime = task.completedAt
     ? new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -90,10 +107,17 @@ function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone,
       {/* Delete — always visible at low opacity on mobile, full on hover/focus */}
       {canDelete && (
         <button
-          onClick={e => { e.stopPropagation(); onDelete(task.id) }}
+          onClick={e => { e.stopPropagation(); setConfirmDelete(true) }}
           className="flex-shrink-0 w-9 h-9 rounded-full bg-red-50 dark:bg-red-500/10 text-red-300 dark:text-red-500/60 flex items-center justify-center hover:bg-red-100 hover:text-red-400 transition-all opacity-40 group-hover:opacity-100 focus:opacity-100"
           aria-label="Delete task"
         >✕</button>
+      )}
+      {confirmDelete && (
+        <ConfirmDialog
+          message={`Delete "${task.title}"?`}
+          onConfirm={() => { setConfirmDelete(false); onDelete(task.id) }}
+          onCancel={() => setConfirmDelete(false)}
+        />
       )}
     </div>
   )
@@ -101,16 +125,24 @@ function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone,
 
 // ─── Task Completion Sheet (helper uses this) ─────────────────
 function CompletionSheet({ task, onDone, onClose }) {
-  const [photo,       setPhoto]       = useState(null)
-  const [notes,       setNotes]       = useState('')
-  const [loading,     setLoading]     = useState(false)
-  const [showExtras,  setShowExtras]  = useState(false)
+  const [photo,        setPhoto]        = useState(null)
+  const [notes,        setNotes]        = useState('')
+  const [loading,      setLoading]      = useState(false)
+  const [showExtras,   setShowExtras]   = useState(false)
+  const [submitError,  setSubmitError]  = useState(null)
+  const [photoError,   setPhotoError]   = useState(null)
   const cameraRef  = useRef()
   const galleryRef = useRef()
 
   async function handleFile(e) {
     const file = e.target.files[0]
     if (!file) return
+    setPhotoError(null)
+    if (!file.type.startsWith('image/')) {
+      setPhotoError('Please select an image file (JPG, PNG, HEIC, etc.)')
+      e.target.value = ''
+      return
+    }
     const compressed = await compressImage(file)
     setPhoto(compressed)
     e.target.value = ''
@@ -118,13 +150,19 @@ function CompletionSheet({ task, onDone, onClose }) {
 
   async function handleSubmit() {
     setLoading(true)
-    await onDone(task.id, { photo: photo || null, notes: notes.trim() || null })
+    setSubmitError(null)
+    const result = await onDone(task.id, { photo: photo || null, notes: notes.trim() || null })
+    setLoading(false)
+    if (result?.error) {
+      setSubmitError('Could not save — check your connection and try again.')
+      return
+    }
     onClose()
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={loading ? undefined : onClose} />
       <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-safe animate-slide-up max-h-[90dvh] overflow-y-auto">
         <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-700 mx-auto mb-4" />
 
@@ -207,7 +245,13 @@ function CompletionSheet({ task, onDone, onClose }) {
           </div>
         )}
 
-        <button onClick={onClose} className="w-full py-3 mt-2 rounded-xl font-sans font-semibold text-sm text-gray-400 dark:text-gray-500">
+        {submitError && (
+          <p className="font-sans text-xs text-red-500 bg-red-50 dark:bg-red-500/10 rounded-xl px-3 py-2 text-center">{submitError}</p>
+        )}
+        {photoError && (
+          <p className="font-sans text-xs text-amber-600 bg-amber-50 dark:bg-amber-500/10 rounded-xl px-3 py-2">{photoError}</p>
+        )}
+        <button onClick={loading ? undefined : onClose} disabled={loading} className="w-full py-3 mt-2 rounded-xl font-sans font-semibold text-sm text-gray-400 dark:text-gray-500 disabled:opacity-40">
           Cancel
         </button>
       </div>
@@ -217,7 +261,8 @@ function CompletionSheet({ task, onDone, onClose }) {
 
 // ─── Task Detail Sheet (admin views completion) ───────────────
 function TaskDetailSheet({ task, onClose, onReopen, onDelete, onEdit, onComplete, isHelper, readOnly, assigneeName, showToast }) {
-  const meta = catMeta(task.category)
+  const [confirmDel, setConfirmDel] = useState(false)
+  const meta = catMeta(task.category || 'other')
   const isDone = task.status === 'done'
   const dueDateDisplay = task.dueDate
     ? new Date(task.dueDate + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
@@ -288,13 +333,20 @@ function TaskDetailSheet({ task, onClose, onReopen, onDelete, onEdit, onComplete
           )}
           {!isHelper && !readOnly && (
             <button
-              onClick={() => { if (confirm('Delete this task?')) { onDelete(task.id); onClose() } }}
+              onClick={() => setConfirmDel(true)}
               className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 transition-all"
             >🗑 Delete</button>
           )}
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-gray-500 bg-gray-100 dark:bg-gray-800 transition-all">Close</button>
         </div>
       </div>
+      {confirmDel && (
+        <ConfirmDialog
+          message={`Delete "${task.title}"?`}
+          onConfirm={() => { setConfirmDel(false); onDelete(task.id); onClose() }}
+          onCancel={() => setConfirmDel(false)}
+        />
+      )}
     </div>
   )
 }
@@ -316,12 +368,17 @@ function CreateTaskSheet({ helperProfiles, existing, onSave, onClose }) {
   const [saveErr,   setSaveErr]   = useState(null)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
+  const today = localToday()
+  const isPastDue = form.dueDate && form.dueDate < today
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.title.trim()) { setTitleErr(true); return }
     setTitleErr(false)
     setSaveErr(null)
-    const payload = { ...form, title: form.title.trim(), estimatedMins: form.estimatedMins ? parseInt(form.estimatedMins) : null }
+    const rawMins = parseInt(form.estimatedMins, 10)
+    const estimatedMins = !isNaN(rawMins) && rawMins > 0 ? Math.min(480, rawMins) : null
+    const payload = { ...form, title: form.title.trim(), description: form.description.trim(), assignedTo: form.assignedTo || null, estimatedMins }
     if (isEditing) {
       setSaving(true)
       const result = await onSave(payload)
@@ -335,7 +392,7 @@ function CreateTaskSheet({ helperProfiles, existing, onSave, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={saving ? undefined : onClose} />
       <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-safe animate-slide-up max-h-[90dvh] overflow-y-auto">
         <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-700 mx-auto mb-4" />
         <h3 className="font-sans font-bold text-base text-gray-800 dark:text-gray-100 mb-4">{isEditing ? 'Edit Task' : 'New Task'}</h3>
@@ -343,13 +400,13 @@ function CreateTaskSheet({ helperProfiles, existing, onSave, onClose }) {
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
             type="text" value={form.title} onChange={e => { set('title', e.target.value); setTitleErr(false) }}
-            placeholder="Task title *" autoFocus
+            placeholder="Task title *" autoFocus maxLength={120}
             className={`w-full rounded-xl border-2 px-3 py-2.5 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none transition-colors ${titleErr ? 'border-red-300 focus:border-red-400 bg-red-50 dark:bg-red-500/5' : 'border-gray-100 dark:border-gray-700 focus:border-blush-200'}`}
           />
           {titleErr && <p className="font-sans text-xs text-red-500 -mt-1">Task title is required.</p>}
           <textarea
             value={form.description} onChange={e => set('description', e.target.value)}
-            placeholder="Description (optional)" rows={2}
+            placeholder="Description (optional)" rows={2} maxLength={500}
             className="w-full rounded-xl border-2 border-gray-100 dark:border-gray-700 px-3 py-2.5 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none focus:border-blush-200 resize-none"
           />
           <div className="grid grid-cols-2 gap-3">
@@ -392,8 +449,9 @@ function CreateTaskSheet({ helperProfiles, existing, onSave, onClose }) {
               <label className="font-sans text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">Due date</label>
               <input
                 type="date" value={form.dueDate} onChange={e => set('dueDate', e.target.value)}
-                className="w-full rounded-xl border-2 border-gray-100 dark:border-gray-700 px-3 py-2 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none"
+                className={`w-full rounded-xl border-2 px-3 py-2 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none transition-colors ${isPastDue ? 'border-amber-300 bg-amber-50 dark:bg-amber-500/10' : 'border-gray-100 dark:border-gray-700'}`}
               />
+              {isPastDue && <p className="font-sans text-[10px] text-amber-500 mt-0.5">⚠ Date is in the past</p>}
             </div>
           </div>
           {/* Recurrence */}
@@ -469,7 +527,7 @@ function CreateTemplateSheet({ existing, onSave, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={saving ? undefined : onClose} />
       <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-safe animate-slide-up max-h-[90dvh] overflow-y-auto">
         <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-700 mx-auto mb-4" />
         <h3 className="font-sans font-bold text-base text-gray-800 dark:text-gray-100 mb-4">
@@ -480,7 +538,7 @@ function CreateTemplateSheet({ existing, onSave, onClose }) {
           {/* Name */}
           <input
             type="text" value={form.name} onChange={e => setF('name', e.target.value)}
-            placeholder="Template name *" autoFocus required
+            placeholder="Template name *" autoFocus required maxLength={80}
             className="w-full rounded-xl border-2 border-gray-100 dark:border-gray-700 px-3 py-2.5 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none focus:border-blush-200"
           />
 
@@ -536,7 +594,7 @@ function CreateTemplateSheet({ existing, onSave, onClose }) {
                   <span className="font-sans text-xs font-bold text-gray-300 w-5 text-center">{idx + 1}</span>
                   <input
                     type="text" value={item.title} onChange={e => updateItem(idx, 'title', e.target.value)}
-                    placeholder="Task name"
+                    placeholder="Task name" maxLength={200}
                     className="flex-1 rounded-xl border-2 border-gray-100 dark:border-gray-700 px-3 py-2 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none focus:border-blush-200"
                   />
                   <select
@@ -587,6 +645,7 @@ function HelperTaskList({ tasks, today, onComplete, tabId }) {
   const grouped = useMemo(() => {
     const map = new Map()
     for (const t of tasks) {
+      if (!t.dueDate) continue  // guard against tasks with null due date
       if (!map.has(t.dueDate)) map.set(t.dueDate, [])
       map.get(t.dueDate).push(t)
     }
@@ -999,15 +1058,14 @@ function AssignTemplateSheet({ template, helperProfiles, tasks, onAssign, onClos
   const alreadyAssigned = tasks.some(t => t.templateId === template.id && t.dueDate === dueDate)
 
   async function handleAssign() {
-    if (!assignTo) return
     setLoading(true)
-    const result = await onAssign(template.id, assignTo, dueDate)
+    const result = await onAssign(template.id, assignTo || null, dueDate)
     setLoading(false)
     if (result?.alreadyAssigned) {
       showToast?.(`Already assigned for ${dueDate === today ? 'today' : dueDate}`)
     } else {
       const helper = helperProfiles.find(p => p.id === assignTo)
-      showToast?.(`✓ Assigned to ${helper?.displayName ?? 'helper'}`)
+      showToast?.(`✓ Assigned to ${helper?.displayName ?? 'member'}`)
       onClose()
       onNavigate?.('schedule')
     }
@@ -1031,10 +1089,10 @@ function AssignTemplateSheet({ template, helperProfiles, tasks, onAssign, onClos
           </div>
         </div>
 
-        {/* Assign to — only show if multiple helpers */}
+        {/* Assign to — only show if helpers exist */}
         {helperProfiles.length === 0 && (
-          <div className="bg-amber-50 dark:bg-amber-500/10 rounded-xl px-3 py-2.5 mb-4">
-            <p className="font-sans text-xs text-amber-600 dark:text-amber-400">No helper accounts found. Create a helper profile first.</p>
+          <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl px-3 py-2.5 mb-4">
+            <p className="font-sans text-xs text-amber-600 dark:text-amber-400">No members available — tasks will be created unassigned.</p>
           </div>
         )}
         {helperProfiles.length > 0 && (
@@ -1077,7 +1135,7 @@ function AssignTemplateSheet({ template, helperProfiles, tasks, onAssign, onClos
           <button onClick={onClose} className="flex-1 py-3 rounded-xl font-sans font-bold text-sm text-gray-500 bg-gray-100 dark:bg-gray-800">Cancel</button>
           <button
             onClick={handleAssign}
-            disabled={loading || helperProfiles.length === 0}
+            disabled={loading}
             className="flex-1 py-3 rounded-2xl font-sans font-bold text-sm text-white bg-gradient-to-r from-blush-300 to-lavender-400 shadow disabled:opacity-50"
           >{loading ? 'Assigning…' : '📋 Assign Tasks'}</button>
         </div>
@@ -1088,9 +1146,10 @@ function AssignTemplateSheet({ template, helperProfiles, tasks, onAssign, onClos
 
 // ─── Manager: Templates Tab ───────────────────────────────────
 function TemplatesTab({ templates, helperProfiles, tasks, onCreateTemplate, onUpdateTemplate, onDeleteTemplate, onAssignTemplate, showToast, onNavigate }) {
-  const [showCreate,    setShowCreate]    = useState(false)
-  const [editing,       setEditing]       = useState(null)
-  const [assigningTmpl, setAssigningTmpl] = useState(null)
+  const [showCreate,      setShowCreate]      = useState(false)
+  const [editing,         setEditing]         = useState(null)
+  const [assigningTmpl,   setAssigningTmpl]   = useState(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
   return (
     <div>
@@ -1107,8 +1166,8 @@ function TemplatesTab({ templates, helperProfiles, tasks, onCreateTemplate, onUp
           <div key={tmpl.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden">
             {/* Header */}
             <div className="flex items-center gap-3 p-4">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ backgroundColor: tmpl.color + '33' }}>
-                {tmpl.emoji}
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ backgroundColor: (tmpl.color ?? '#c4b5fd') + '33' }}>
+                {tmpl.emoji || '📋'}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -1119,7 +1178,7 @@ function TemplatesTab({ templates, helperProfiles, tasks, onCreateTemplate, onUp
                     </span>
                   )}
                 </div>
-                <p className="font-sans text-xs text-gray-400">{tmpl.items.length} task{tmpl.items.length !== 1 ? 's' : ''}</p>
+                <p className="font-sans text-xs text-gray-400">{tmpl.items.length} task{tmpl.items.length !== 1 ? 's' : ''}{tmpl.items.length === 0 ? ' — add steps to enable assign' : ''}</p>
               </div>
               <div className="flex gap-1.5">
                 <button
@@ -1127,7 +1186,7 @@ function TemplatesTab({ templates, helperProfiles, tasks, onCreateTemplate, onUp
                   className="px-2.5 py-1.5 rounded-lg font-sans text-xs font-bold text-gray-400 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 transition-all"
                 >Edit</button>
                 <button
-                  onClick={() => { if (confirm(`Delete "${tmpl.name}"?`)) onDeleteTemplate(tmpl.id) }}
+                  onClick={() => setConfirmDeleteId(tmpl.id)}
                   className="px-2.5 py-1.5 rounded-lg font-sans text-xs font-bold text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 transition-all"
                 >✕</button>
               </div>
@@ -1148,9 +1207,10 @@ function TemplatesTab({ templates, helperProfiles, tasks, onCreateTemplate, onUp
             {/* Assign button */}
             <div className="px-4 py-3">
               <button
-                onClick={() => setAssigningTmpl(tmpl)}
-                className="w-full py-2.5 rounded-xl font-sans font-bold text-sm text-white bg-gradient-to-r from-blush-300 to-lavender-400 shadow hover:shadow-md transition-all"
-              >📋 Assign</button>
+                onClick={() => tmpl.items.length > 0 ? setAssigningTmpl(tmpl) : null}
+                  disabled={tmpl.items.length === 0}
+                  className={`w-full py-2.5 rounded-xl font-sans font-bold text-sm text-white shadow-sm transition-all ${tmpl.items.length > 0 ? 'bg-gradient-to-r from-blush-300 to-lavender-400 hover:shadow-md' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}`}
+                >📋 Assign to member</button>
             </div>
           </div>
         ))}
@@ -1189,6 +1249,13 @@ function TemplatesTab({ templates, helperProfiles, tasks, onCreateTemplate, onUp
           onNavigate={onNavigate}
         />
       )}
+      {confirmDeleteId && (
+        <ConfirmDialog
+          message={`Delete "${templates.find(t => t.id === confirmDeleteId)?.name}"? This cannot be undone.`}
+          onConfirm={() => { onDeleteTemplate(confirmDeleteId); setConfirmDeleteId(null) }}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
+      )}
     </div>
   )
 }
@@ -1216,13 +1283,17 @@ function HistoryTab({ tasks, helperProfiles }) {
 
   const displayTasks = photoFilter ? historyTasks.filter(t => t.completedPhoto) : historyTasks
 
-  // Group by date
+  // Group by date, sort each day by completedAt descending (most recent first)
   const grouped = useMemo(() => {
     const map = new Map()
     for (const t of displayTasks) {
+      if (!t.dueDate) continue
       const key = t.dueDate === today ? 'today' : t.dueDate
       if (!map.has(key)) map.set(key, [])
       map.get(key).push(t)
+    }
+    for (const [, tasks] of map) {
+      tasks.sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))
     }
     return [...map.entries()]
   }, [displayTasks, today])
@@ -1358,9 +1429,15 @@ export default function TasksPage({ user, showToast }) {
 
   const [activeTab, setActiveTab] = useState('schedule')
 
-  // Auto-assign recurring templates that are due today/this week (admin only, runs once after load)
+  // Auto-assign recurring templates that are due today/this week (admin only, runs once after load per user)
   const autoAssignRan = useRef(false)
+  const autoAssignUserRef = useRef(null)
   useEffect(() => {
+    // Reset guard if user changed (e.g. switched accounts in same session)
+    if (autoAssignUserRef.current !== user?.id) {
+      autoAssignRan.current = false
+      autoAssignUserRef.current = user?.id
+    }
     if (!loading && isAdmin && templates.length > 0 && !autoAssignRan.current) {
       autoAssignRan.current = true
       const firstHelperId = helperProfiles[0]?.id ?? null
@@ -1368,7 +1445,7 @@ export default function TasksPage({ user, showToast }) {
         if (assigned > 0) showToast(`🔁 Auto-assigned ${assigned} recurring template${assigned !== 1 ? 's' : ''} for today`)
       })
     }
-  }, [loading, isAdmin, templates.length])
+  }, [loading, isAdmin, templates.length, user?.id])
 
   if (loading) {
     return (

@@ -1,6 +1,6 @@
 ---
 title: "My Home Haven"
-subtitle: "Technical Design Document - v2.9.0"
+subtitle: "Technical Design Document - v3.1.0"
 author: "Development Team"
 date: "29 March 2026"
 ---
@@ -8,7 +8,7 @@ date: "29 March 2026"
 | | |
 |---|---|
 | **Project** | My Home Haven - Household Inventory PWA |
-| **Current Version** | 2.9.0 |
+| **Current Version** | 3.1.0 |
 | **Document Status** | Living Document - updated with every release |
 | **Last Updated** | 29 March 2026 |
 | **Author** | Development Team |
@@ -489,6 +489,12 @@ Added the store text column to items. Created the wishlist table with RLS polici
 **v2.4.0**
 Created task_templates, task_template_items, and tasks tables with role-scoped RLS (admin full CRUD; helper read assigned tasks and update own status). Enabled Supabase Realtime publication on task_templates and tasks tables.
 
+**v3.0.0**
+Comprehensive edge-case hardening: ConfirmDialog component replacing window.confirm(), CompletionSheet photo validation + submit guards, CreateTaskSheet input maxLength + past-due warning + backdrop guards, TemplatesTab delete confirmation flow. useTasks loadSeqRef race-condition fix, safeEstMins validation, optimistic rollback on DB error. History tab: include today's completed tasks, full-width photo banner, photo filter. useAuth 15-second login timeout + retry profile fetch + eager user set on login + immediate logout clear.
+
+**v3.1.0**
+Assignment dropdown now includes all profiles (admin + helper) — admins can be assigned tasks. loadHelperProfiles query no longer filters by role.
+
 ---
 
 ## Appendix B: Feature Reference Matrix
@@ -522,6 +528,7 @@ Created task_templates, task_template_items, and tasks tables with role-scoped R
 
 | Version | Date | Summary |
 |---------|------|---------|
+| 3.0.0 | 2026-03-29 | Comprehensive edge-case hardening: ConfirmDialog (replaces browser confirm), photo type validation, form backdrop/cancel guards, completeTask rollback, loadTasks race condition fix, estimatedMins safety, null guards throughout. |
 | 2.9.0 | 2026-03-29 | Fix: History tab now includes today's completed tasks (not just past days); full-width photo banner on completed tasks with proof photos; "With Photos" filter toggle; 📷 N badge on History tab; completion notes preview inline. |
 | 2.8.0 | 2026-03-29 | Rename "Helper" → "Member" in all UI labels (login screen, sidebar, member dashboard); Daddy Jo, Nene Ella, Wowa Grace promoted to admin in users.js; SQL migration + admin-override RLS policy for future role changes via script. |
 | 2.7.0 | 2026-03-29 | Iteration 25: DB recur_type patched on all 4 seeded templates (daily/weekly); seed script includes recur_type; CompletionSheet shows recurring hint banner; autoAssignDueTemplates returns assigned count and triggers admin toast. |

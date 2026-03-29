@@ -106,7 +106,7 @@ export default function LoginScreen({ onLogin }) {
               </div>
               <p className="font-sans font-bold text-gray-700 text-lg leading-snug">{selectedUser.displayName}</p>
               <span className={`mt-1 font-sans text-[10px] font-bold px-2.5 py-0.5 rounded-full ${selectedUser.role === 'admin' ? 'bg-blush-50 text-blush-400 border border-blush-100' : 'bg-lavender-50 text-lavender-400 border border-lavender-100'}`}>
-                {selectedUser.role === 'admin' ? 'Admin' : 'Helper'}
+                {selectedUser.role === 'admin' ? 'Admin' : 'Member'}
               </span>
             </div>
 

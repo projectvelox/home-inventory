@@ -2,44 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Nunito', sans-serif;
-  background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 50%, #f0fdf4 100%);
-  min-height: 100dvh;
-  /* Prevent elastic bounce showing white on overscroll */
-  overscroll-behavior: none;
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
-/* Prevent iOS Safari from zooming in on input focus.
-   Input font-size must be >= 16px to avoid auto-zoom. */
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-optical-sizing: auto;
+  background-color: #fafaf9;
+  min-height: 100dvh;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* iOS Safari: prevent auto-zoom on input focus (must be >= 16px) */
 @supports (-webkit-touch-callout: none) {
-  input,
-  textarea,
-  select {
+  input, textarea, select {
     font-size: 16px !important;
   }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Refined scrollbar */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #fda4bc; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #f472b6; }
+
+/* Text selection */
+::selection {
+  background: #fecdd9;
+  color: #be185d;
 }
 
-::-webkit-scrollbar-track {
-  background: #fce7f3;
-  border-radius: 10px;
+/* Smooth tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #f9a8d4;
-  border-radius: 10px;
+/* Number input — hide arrows */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] { -moz-appearance: textfield; }
+
+/* ── Dark mode base ──────────────────────────────────────────── */
+.dark body {
+  background-color: #111827;
+  color: #f9fafb;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #f472b6;
-}
+.dark ::-webkit-scrollbar-thumb { background: #374151; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+::selection { background: #fecdd9; color: #be185d; }
+.dark ::selection { background: #374151; color: #f9fafb; }

@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node 'c:/Users/MSI 2/home-inventory/.claude/doc-reminder.cjs'",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node 'c:/Users/MSI 2/home-inventory/.claude/sync-docx.cjs'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,106 @@
+<svg width="760" height="495" viewBox="0 0 760 495" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="760" height="495" fill="#f8fafc" rx="8"/>
+
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="760" height="44" fill="#0f172a" rx="8 8 0 0"/>
+  <text x="380" y="27" text-anchor="middle" font-size="12" font-weight="bold" fill="white" letter-spacing="1.5">SYSTEM ARCHITECTURE  —  MY HOME HAVEN  v2.4.0</text>
+
+  <!-- ═══════════════ CLIENT LAYER ═══════════════ -->
+  <rect x="12" y="52" width="736" height="170" fill="#eff6ff" stroke="#60a5fa" stroke-width="2" rx="8"/>
+  <text x="26" y="70" font-size="9.5" font-weight="bold" fill="#1e40af" letter-spacing="1.2">CLIENT LAYER  ·  React 18  +  Vite 5  +  Tailwind CSS 3</text>
+
+  <!-- Components box -->
+  <rect x="24" y="76" width="222" height="133" fill="white" stroke="#bfdbfe" stroke-width="1.5" rx="5"/>
+  <rect x="24" y="76" width="222" height="26" fill="#1d4ed8" rx="5 5 0 0"/>
+  <text x="135" y="93" text-anchor="middle" font-size="9.5" font-weight="bold" fill="white">Components  (19 files)</text>
+  <text x="135" y="116" text-anchor="middle" font-size="8.5" fill="#334155">Dashboard · ItemCard · ItemModal</text>
+  <text x="135" y="130" text-anchor="middle" font-size="8.5" fill="#334155">ShoppingList · ExpiryCalendar</text>
+  <text x="135" y="144" text-anchor="middle" font-size="8.5" fill="#334155">WishlistPage · TasksPage</text>
+  <text x="135" y="158" text-anchor="middle" font-size="8.5" fill="#334155">BarcodeScanner · HelpPage</text>
+  <text x="135" y="172" text-anchor="middle" font-size="7.5" fill="#94a3b8">+ 10 more  ·  Role-gated visibility</text>
+  <text x="135" y="185" text-anchor="middle" font-size="7.5" fill="#94a3b8">React.memo optimized card grid</text>
+
+  <!-- Hooks box -->
+  <rect x="269" y="76" width="222" height="133" fill="white" stroke="#bfdbfe" stroke-width="1.5" rx="5"/>
+  <rect x="269" y="76" width="222" height="26" fill="#1d4ed8" rx="5 5 0 0"/>
+  <text x="380" y="93" text-anchor="middle" font-size="9.5" font-weight="bold" fill="white">Custom Hooks  (8 files)</text>
+  <text x="380" y="116" text-anchor="middle" font-size="8.5" fill="#334155">useInventory · useAuth</text>
+  <text x="380" y="130" text-anchor="middle" font-size="8.5" fill="#334155">useTasks · useWishlist</text>
+  <text x="380" y="144" text-anchor="middle" font-size="8.5" fill="#334155">useDarkMode · useNotifications</text>
+  <text x="380" y="158" text-anchor="middle" font-size="8.5" fill="#334155">useItemHistory · usePWAInstall</text>
+  <text x="380" y="172" text-anchor="middle" font-size="7.5" fill="#94a3b8">No global state library</text>
+  <text x="380" y="185" text-anchor="middle" font-size="7.5" fill="#94a3b8">Supabase Realtime as sync bus</text>
+
+  <!-- Build + PWA box -->
+  <rect x="514" y="76" width="222" height="133" fill="white" stroke="#bfdbfe" stroke-width="1.5" rx="5"/>
+  <rect x="514" y="76" width="222" height="26" fill="#1d4ed8" rx="5 5 0 0"/>
+  <text x="625" y="93" text-anchor="middle" font-size="9.5" font-weight="bold" fill="white">Build  &amp;  PWA</text>
+  <text x="625" y="116" text-anchor="middle" font-size="8.5" fill="#334155">Vite 5  ·  Manual code splitting</text>
+  <text x="625" y="130" text-anchor="middle" font-size="8.5" fill="#334155">vendor-react / vendor-supabase</text>
+  <text x="625" y="144" text-anchor="middle" font-size="8.5" fill="#334155">vendor-zxing (barcode decoder)</text>
+  <text x="625" y="158" text-anchor="middle" font-size="8.5" fill="#334155">PWA manifest  ·  5 icon sizes</text>
+  <text x="625" y="172" text-anchor="middle" font-size="7.5" fill="#94a3b8">App shortcuts  ·  Install prompt</text>
+  <text x="625" y="185" text-anchor="middle" font-size="7.5" fill="#94a3b8">Push notifications (daily alerts)</text>
+
+  <!-- ═══════════════ ARROWS ═══════════════ -->
+  <line x1="230" y1="225" x2="230" y2="270" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <rect x="138" y="237" width="132" height="16" fill="#f0f4ff" stroke="#bfdbfe" stroke-width="1" rx="3"/>
+  <text x="204" y="249" text-anchor="middle" font-size="8" fill="#3b82f6">@supabase/supabase-js  v2</text>
+
+  <line x1="570" y1="225" x2="600" y2="270" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <rect x="562" y="237" width="88" height="16" fill="#fff7ed" stroke="#fdba74" stroke-width="1" rx="3"/>
+  <text x="606" y="249" text-anchor="middle" font-size="8" fill="#c2410c">fetch /api/scan</text>
+
+  <!-- ═══════════════ SUPABASE ═══════════════ -->
+  <rect x="12" y="278" width="455" height="195" fill="#f0fdf4" stroke="#4ade80" stroke-width="2" rx="8"/>
+  <text x="26" y="297" font-size="9.5" font-weight="bold" fill="#15803d" letter-spacing="1.2">SUPABASE  ·  Backend as a Service  (Hosted Cloud)</text>
+
+  <rect x="24" y="304" width="200" height="155" fill="white" stroke="#bbf7d0" stroke-width="1.5" rx="5"/>
+  <rect x="24" y="304" width="200" height="24" fill="#16a34a" rx="5 5 0 0"/>
+  <text x="124" y="320" text-anchor="middle" font-size="9" font-weight="bold" fill="white">PostgreSQL + Row Level Security</text>
+  <text x="124" y="341" text-anchor="middle" font-size="8.5" fill="#166534">10 tables  ·  UUID primary keys</text>
+  <text x="124" y="355" text-anchor="middle" font-size="8.5" fill="#166534">RLS enabled on every table</text>
+  <text x="124" y="369" text-anchor="middle" font-size="8.5" fill="#166534">Admin / Helper role isolation</text>
+  <text x="124" y="383" text-anchor="middle" font-size="8.5" fill="#166534">SECURITY DEFINER RPC functions</text>
+  <text x="124" y="397" text-anchor="middle" font-size="8.5" fill="#166534">qty-change trigger → item_history</text>
+  <text x="124" y="411" text-anchor="middle" font-size="7.5" fill="#94a3b8">SQL migrations v1.0 → v2.4</text>
+  <text x="124" y="424" text-anchor="middle" font-size="7.5" fill="#94a3b8">Optimistic UI updates client-side</text>
+
+  <rect x="244" y="304" width="200" height="155" fill="white" stroke="#bbf7d0" stroke-width="1.5" rx="5"/>
+  <rect x="244" y="304" width="200" height="24" fill="#16a34a" rx="5 5 0 0"/>
+  <text x="344" y="320" text-anchor="middle" font-size="9" font-weight="bold" fill="white">Auth  +  Realtime  +  Storage</text>
+  <text x="344" y="341" text-anchor="middle" font-size="8.5" fill="#166534">JWT sessions  ·  signInWithPassword</text>
+  <text x="344" y="355" text-anchor="middle" font-size="8.5" fill="#166534">6-second hard timeout (offline safe)</text>
+  <text x="344" y="369" text-anchor="middle" font-size="8.5" fill="#166534">Realtime: items · categories</text>
+  <text x="344" y="383" text-anchor="middle" font-size="8.5" fill="#166534">locations · tasks · wishlist</text>
+  <text x="344" y="397" text-anchor="middle" font-size="8.5" fill="#166534">Storage buckets: photos</text>
+  <text x="344" y="411" text-anchor="middle" font-size="7.5" fill="#94a3b8">Max 800px · JPEG 60% quality</text>
+  <text x="344" y="424" text-anchor="middle" font-size="7.5" fill="#94a3b8">compressImage() before upload</text>
+
+  <!-- ═══════════════ VERCEL ═══════════════ -->
+  <rect x="480" y="278" width="268" height="92" fill="#fff7ed" stroke="#fb923c" stroke-width="2" rx="8"/>
+  <text x="494" y="297" font-size="9.5" font-weight="bold" fill="#c2410c" letter-spacing="1.2">VERCEL SERVERLESS</text>
+  <text x="494" y="316" font-size="8.5" fill="#9a3412">POST /api/scan  (Node.js edge function)</text>
+  <text x="494" y="330" font-size="8.5" fill="#9a3412">Input: base64 image + category hint</text>
+  <text x="494" y="344" font-size="8.5" fill="#9a3412">Output: { name, unit, notes }</text>
+  <text x="494" y="358" font-size="7.5" fill="#c2410c">Silent fallback on error  ·  No rate limit (yet)</text>
+
+  <!-- Arrow Vercel → Anthropic -->
+  <line x1="614" y1="373" x2="614" y2="400" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <rect x="559" y="379" width="105" height="16" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1" rx="3"/>
+  <text x="611" y="391" text-anchor="middle" font-size="8" fill="#7e22ce">Anthropic REST API</text>
+
+  <!-- ═══════════════ ANTHROPIC ═══════════════ -->
+  <rect x="480" y="406" width="268" height="80" fill="#faf5ff" stroke="#c084fc" stroke-width="2" rx="8"/>
+  <text x="494" y="425" font-size="9.5" font-weight="bold" fill="#7e22ce" letter-spacing="1.2">ANTHROPIC API</text>
+  <text x="494" y="444" font-size="8.5" fill="#6b21a8">Model: claude-haiku-4-5-20251001  (Vision)</text>
+  <text x="494" y="458" font-size="8.5" fill="#6b21a8">Identifies household items from photos</text>
+  <text x="494" y="472" font-size="7.5" fill="#9333ea">Returns product name · unit · reminder note</text>
+</svg>

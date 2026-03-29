@@ -1,0 +1,141 @@
+<svg width="760" height="600" viewBox="0 0 760 600" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="fk" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0, 7 3, 0 6" fill="#94a3b8"/>
+    </marker>
+    <marker id="fkBlue" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0, 7 3, 0 6" fill="#60a5fa"/>
+    </marker>
+    <marker id="fkIndigo" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0, 7 3, 0 6" fill="#818cf8"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="760" height="600" fill="#f8fafc" rx="8"/>
+
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="760" height="44" fill="#0f172a" rx="8 8 0 0"/>
+  <text x="380" y="27" text-anchor="middle" font-size="12" font-weight="bold" fill="white" letter-spacing="1.5">DATABASE SCHEMA  —  ENTITY RELATIONSHIP DIAGRAM</text>
+
+  <!-- ═══════════ RELATIONSHIP LINES ═══════════ -->
+
+  <!-- auth.users vertical stem to bus -->
+  <line x1="380" y1="87" x2="380" y2="114" stroke="#94a3b8" stroke-width="1.5"/>
+  <!-- horizontal bus line -->
+  <line x1="80" y1="114" x2="590" y2="114" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <!-- bus drops to each row-2 table -->
+  <line x1="80"  y1="114" x2="80"  y2="138" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#fk)"/>
+  <line x1="245" y1="114" x2="245" y2="138" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#fk)"/>
+  <line x1="415" y1="114" x2="415" y2="138" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#fk)"/>
+  <line x1="590" y1="114" x2="590" y2="138" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#fk)"/>
+
+  <!-- auth.users → items (dashed, left-side route) -->
+  <path d="M 305,62 L 62,62 L 62,252 L 130,252" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4,2" fill="none" marker-end="url(#fkBlue)"/>
+
+  <!-- auth.users → wishlist (dashed, right-side route) -->
+  <path d="M 455,62 L 648,62 L 648,252 L 625,252" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4,2" fill="none" marker-end="url(#fkBlue)"/>
+
+  <!-- categories → items -->
+  <path d="M 245,193 L 245,232 L 210,232 L 210,258" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#fk)"/>
+
+  <!-- locations → items -->
+  <path d="M 415,193 L 415,238 L 355,238 L 355,258" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#fk)"/>
+
+  <!-- items → item_history -->
+  <path d="M 170,352 L 170,390 L 100,390 L 100,408" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#fk)"/>
+
+  <!-- Divider line (inventory / tasks) -->
+  <line x1="15" y1="484" x2="745" y2="484" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="265" y="476" width="230" height="16" fill="#f8fafc"/>
+  <text x="380" y="487" text-anchor="middle" font-size="8" fill="#94a3b8" letter-spacing="1">TASKS DOMAIN  ·  all tables include user_id → auth.users</text>
+
+  <!-- task_templates → task_template_items -->
+  <line x1="395" y1="530" x2="422" y2="530" stroke="#818cf8" stroke-width="1.5" marker-end="url(#fkIndigo)"/>
+
+  <!-- task_templates → tasks -->
+  <line x1="307" y1="558" x2="307" y2="574" stroke="#818cf8" stroke-width="1.5" marker-end="url(#fkIndigo)"/>
+
+  <!-- ═══════════ TABLES ═══════════ -->
+
+  <!-- auth.users (anchor table) -->
+  <rect x="305" y="32" width="150" height="55" fill="white" stroke="#1d4ed8" stroke-width="2.5" rx="5"/>
+  <rect x="305" y="32" width="150" height="24" fill="#1d4ed8" rx="5 5 0 0"/>
+  <text x="380" y="48" text-anchor="middle" font-size="9.5" font-weight="bold" fill="white">auth.users</text>
+  <text x="380" y="66" text-anchor="middle" font-size="8" fill="#475569">id (uuid)  PK</text>
+  <text x="380" y="79" text-anchor="middle" font-size="8" fill="#475569">email  ·  encrypted_password</text>
+
+  <!-- profiles -->
+  <rect x="15" y="138" width="130" height="55" fill="white" stroke="#60a5fa" stroke-width="1.5" rx="5"/>
+  <rect x="15" y="138" width="130" height="22" fill="#3b82f6" rx="5 5 0 0"/>
+  <text x="80" y="153" text-anchor="middle" font-size="9" font-weight="bold" fill="white">profiles</text>
+  <text x="80" y="172" text-anchor="middle" font-size="8" fill="#475569">id (uuid)  FK→ users</text>
+  <text x="80" y="184" text-anchor="middle" font-size="8" fill="#475569">role  ·  display_name</text>
+
+  <!-- categories -->
+  <rect x="172" y="138" width="146" height="55" fill="white" stroke="#60a5fa" stroke-width="1.5" rx="5"/>
+  <rect x="172" y="138" width="146" height="22" fill="#3b82f6" rx="5 5 0 0"/>
+  <text x="245" y="153" text-anchor="middle" font-size="9" font-weight="bold" fill="white">categories</text>
+  <text x="245" y="172" text-anchor="middle" font-size="8" fill="#475569">id  ·  user_id (FK)</text>
+  <text x="245" y="184" text-anchor="middle" font-size="8" fill="#475569">name  ·  emoji  ·  color</text>
+
+  <!-- locations -->
+  <rect x="342" y="138" width="146" height="55" fill="white" stroke="#60a5fa" stroke-width="1.5" rx="5"/>
+  <rect x="342" y="138" width="146" height="22" fill="#3b82f6" rx="5 5 0 0"/>
+  <text x="415" y="153" text-anchor="middle" font-size="9" font-weight="bold" fill="white">locations</text>
+  <text x="415" y="172" text-anchor="middle" font-size="8" fill="#475569">id  ·  user_id (FK)</text>
+  <text x="415" y="184" text-anchor="middle" font-size="8" fill="#475569">name  ·  photo_url  ·  sort_order</text>
+
+  <!-- share_tokens -->
+  <rect x="512" y="138" width="158" height="55" fill="white" stroke="#60a5fa" stroke-width="1.5" rx="5"/>
+  <rect x="512" y="138" width="158" height="22" fill="#3b82f6" rx="5 5 0 0"/>
+  <text x="591" y="153" text-anchor="middle" font-size="9" font-weight="bold" fill="white">share_tokens</text>
+  <text x="591" y="172" text-anchor="middle" font-size="8" fill="#475569">token (text)  PK</text>
+  <text x="591" y="184" text-anchor="middle" font-size="8" fill="#475569">user_id (FK)  ·  expires_at</text>
+
+  <!-- items  (main hub) -->
+  <rect x="130" y="258" width="280" height="94" fill="white" stroke="#1d4ed8" stroke-width="2" rx="5"/>
+  <rect x="130" y="258" width="280" height="24" fill="#1d4ed8" rx="5 5 0 0"/>
+  <text x="270" y="274" text-anchor="middle" font-size="9.5" font-weight="bold" fill="white">items</text>
+  <text x="270" y="296" text-anchor="middle" font-size="8" fill="#334155">id  ·  user_id (FK)  ·  category_id (FK)  ·  location_id (FK)</text>
+  <text x="270" y="310" text-anchor="middle" font-size="8" fill="#334155">name  ·  qty  ·  unit  ·  restock_qty  ·  full_qty</text>
+  <text x="270" y="324" text-anchor="middle" font-size="8" fill="#334155">price  ·  expiry_date  ·  recur_days  ·  store</text>
+  <text x="270" y="338" text-anchor="middle" font-size="7.5" fill="#94a3b8">notes  ·  image  ·  updated_at  ·  created_at</text>
+
+  <!-- wishlist -->
+  <rect x="432" y="258" width="198" height="94" fill="white" stroke="#60a5fa" stroke-width="1.5" rx="5"/>
+  <rect x="432" y="258" width="198" height="24" fill="#3b82f6" rx="5 5 0 0"/>
+  <text x="531" y="274" text-anchor="middle" font-size="9.5" font-weight="bold" fill="white">wishlist</text>
+  <text x="531" y="296" text-anchor="middle" font-size="8" fill="#334155">id  ·  user_id (FK)</text>
+  <text x="531" y="310" text-anchor="middle" font-size="8" fill="#334155">name  ·  category_id (FK)</text>
+  <text x="531" y="324" text-anchor="middle" font-size="8" fill="#334155">priority  ·  estimated_price</text>
+  <text x="531" y="338" text-anchor="middle" font-size="7.5" fill="#94a3b8">store  ·  link  ·  notes</text>
+
+  <!-- item_history -->
+  <rect x="15" y="408" width="178" height="62" fill="white" stroke="#60a5fa" stroke-width="1.5" rx="5"/>
+  <rect x="15" y="408" width="178" height="22" fill="#3b82f6" rx="5 5 0 0"/>
+  <text x="104" y="423" text-anchor="middle" font-size="9" font-weight="bold" fill="white">item_history</text>
+  <text x="104" y="444" text-anchor="middle" font-size="8" fill="#475569">id  ·  item_id (FK)  ·  user_id</text>
+  <text x="104" y="457" text-anchor="middle" font-size="8" fill="#475569">old_qty  ·  new_qty  ·  changed_at</text>
+  <text x="104" y="469" text-anchor="middle" font-size="7" fill="#94a3b8">Populated by DB trigger on items.qty</text>
+
+  <!-- task_templates -->
+  <rect x="210" y="494" width="185" height="64" fill="white" stroke="#818cf8" stroke-width="1.5" rx="5"/>
+  <rect x="210" y="494" width="185" height="22" fill="#4f46e5" rx="5 5 0 0"/>
+  <text x="302" y="509" text-anchor="middle" font-size="9" font-weight="bold" fill="white">task_templates</text>
+  <text x="302" y="530" text-anchor="middle" font-size="8" fill="#334155">id  ·  user_id (FK)</text>
+  <text x="302" y="543" text-anchor="middle" font-size="8" fill="#334155">name  ·  category  ·  color  ·  emoji</text>
+  <text x="302" y="555" text-anchor="middle" font-size="7.5" fill="#94a3b8">recur_type  ·  recur_interval</text>
+
+  <!-- task_template_items -->
+  <rect x="422" y="494" width="220" height="64" fill="white" stroke="#818cf8" stroke-width="1.5" rx="5"/>
+  <rect x="422" y="494" width="220" height="22" fill="#4f46e5" rx="5 5 0 0"/>
+  <text x="532" y="509" text-anchor="middle" font-size="9" font-weight="bold" fill="white">task_template_items</text>
+  <text x="532" y="530" text-anchor="middle" font-size="8" fill="#334155">id  ·  template_id (FK)</text>
+  <text x="532" y="543" text-anchor="middle" font-size="8" fill="#334155">description  ·  sort_order</text>
+
+  <!-- tasks -->
+  <rect x="210" y="574" width="185" height="18" fill="white" stroke="#818cf8" stroke-width="1.5" rx="5"/>
+  <rect x="210" y="574" width="185" height="18" fill="#4f46e5" rx="5"/>
+  <text x="302" y="587" text-anchor="middle" font-size="8.5" font-weight="bold" fill="white">tasks  →  assigned_to (FK) · status · completed_photo</text>
+</svg>

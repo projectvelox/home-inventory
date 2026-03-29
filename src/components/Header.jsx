@@ -1,26 +1,31 @@
 import React from 'react'
 
-export default function Header({ lowStockCount, user, onLogout }) {
+export default function Header({ lowStockCount, user, onLogout, dark, onToggleDark }) {
   return (
-    <header className="sticky top-0 z-10 backdrop-blur-md bg-white/70 border-b border-blush-100 shadow-sm">
-      <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div>
-          <h1 className="font-title text-3xl text-blush-400 leading-none">My Home Haven</h1>
-          <p className="font-cute text-xs text-lavender-400 font-semibold mt-0.5">Keep everything in order ✨</p>
-        </div>
+    <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
+      <div className="px-4 py-3 flex items-center justify-between">
+        <h1 className="font-title text-2xl text-blush-400 leading-none">My Home Haven</h1>
 
-        {/* User chip + logout */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-white/80 border border-blush-100 rounded-full px-2.5 py-1 shadow-sm">
-            <span className="text-base leading-none">{user.avatar}</span>
-            <span className="font-cute text-xs font-bold text-gray-600 max-w-[70px] truncate">
+          {/* Dark mode toggle */}
+          <button
+            onClick={onToggleDark}
+            title={dark ? 'Light mode' : 'Dark mode'}
+            className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-sm hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95 transition-all"
+          >
+            {dark ? '☀️' : '🌙'}
+          </button>
+
+          <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-full px-2.5 py-1">
+            <span className="text-sm leading-none">{user.avatar}</span>
+            <span className="font-sans text-xs font-semibold text-gray-600 dark:text-gray-300 max-w-[72px] truncate">
               {user.displayName}
             </span>
           </div>
           <button
             onClick={onLogout}
             title="Sign out"
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-base hover:bg-gray-200 active:scale-95 transition-all"
+            className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-sm hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95 transition-all"
           >
             🚪
           </button>
@@ -28,13 +33,11 @@ export default function Header({ lowStockCount, user, onLogout }) {
       </div>
 
       {lowStockCount > 0 && (
-        <div className="bg-gradient-to-r from-peach-100 to-blush-100 border-t border-peach-200 px-4 py-2">
-          <div className="max-w-2xl mx-auto flex items-center gap-2">
-            <span className="text-lg animate-bounce-soft">🛒</span>
-            <p className="font-cute text-sm font-bold text-peach-400">
-              {lowStockCount} {lowStockCount === 1 ? 'item needs' : 'items need'} restocking!
-            </p>
-          </div>
+        <div className="bg-gradient-to-r from-peach-50 to-blush-50 dark:from-peach-500/10 dark:to-blush-500/10 border-t border-peach-100 dark:border-peach-500/20 px-4 py-2 flex items-center gap-2">
+          <span className="text-base">🛒</span>
+          <p className="font-sans text-sm font-semibold text-peach-500">
+            {lowStockCount} {lowStockCount === 1 ? 'item needs' : 'items need'} restocking
+          </p>
         </div>
       )}
     </header>

@@ -2,17 +2,54 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>My Home Haven 🏠</title>
+
+    <!-- ── Primary SEO ─────────────────────────────────────────── -->
+    <title>My Home Haven — Household Inventory Tracker</title>
+    <meta name="description" content="Keep your home perfectly stocked. Track pantry items, household supplies, and expiry dates — and generate shopping lists in seconds." />
+    <meta name="keywords" content="home inventory, pantry tracker, household supplies, shopping list, expiry tracker" />
+    <meta name="author" content="My Home Haven" />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <!-- ── Icons ──────────────────────────────────────────────── -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- ── PWA ────────────────────────────────────────────────── -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#f9a8d4" />
+    <meta name="theme-color" content="#fb7185" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Home Haven" />
+
+    <!-- ── Open Graph (iMessage / WhatsApp / Slack link previews) -->
+    <meta property="og:type"         content="website" />
+    <meta property="og:site_name"    content="My Home Haven" />
+    <meta property="og:title"        content="My Home Haven — Household Inventory Tracker" />
+    <meta property="og:description"  content="Keep your home perfectly stocked. Track pantry items, household supplies, and expiry dates — and generate shopping lists in seconds." />
+    <meta property="og:image"        content="/icon-512.png" />
+    <meta property="og:image:width"  content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt"    content="My Home Haven app icon" />
+
+    <!-- ── Twitter card ──────────────────────────────────────── -->
+    <meta name="twitter:card"        content="summary" />
+    <meta name="twitter:title"       content="My Home Haven" />
+    <meta name="twitter:description" content="Keep your home perfectly stocked." />
+    <meta name="twitter:image"       content="/icon-512.png" />
+
+    <!-- ── Fonts ─────────────────────────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet" />
+    <link rel="dns-prefetch" href="//world.openfoodfacts.org" />
+    <link rel="dns-prefetch" href="//api.upcitemdb.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="root"></div>

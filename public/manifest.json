@@ -1,17 +1,54 @@
 {
   "name": "My Home Haven",
   "short_name": "Home Haven",
-  "description": "Keep track of your home inventory",
+  "description": "Keep your household stocked — track pantry, supplies, and shopping lists in one beautiful app.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#fdf2f8",
-  "theme_color": "#f9a8d4",
+  "theme_color": "#fb7185",
+  "categories": ["lifestyle", "utilities"],
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Shopping List",
+      "short_name": "Shop",
+      "description": "Open your shopping list",
+      "url": "/?view=shopping",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Add Item",
+      "short_name": "Add",
+      "description": "Add a new item to inventory",
+      "url": "/?add=1",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

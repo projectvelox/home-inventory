@@ -1,0 +1,189 @@
+<svg width="760" height="420" viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+    </marker>
+    <marker id="arrGreen" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#16a34a"/>
+    </marker>
+    <marker id="arrRed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect width="760" height="420" fill="#f8fafc" rx="8"/>
+
+  <!-- Title Bar -->
+  <rect x="0" y="0" width="760" height="44" fill="#0f172a" rx="8 8 0 0"/>
+  <text x="380" y="27" text-anchor="middle" font-size="12" font-weight="bold" fill="white" letter-spacing="1.5">APPLICATION ENTRY  &amp;  AUTHENTICATION FLOW</text>
+
+  <!-- ══════════ LEFT PANEL: Entry Flow ══════════ -->
+  <rect x="12" y="52" width="290" height="356" fill="white" stroke="#e2e8f0" stroke-width="1.5" rx="8"/>
+  <rect x="12" y="52" width="290" height="28" fill="#334155" rx="8 8 0 0"/>
+  <text x="157" y="70" text-anchor="middle" font-size="9.5" font-weight="bold" fill="white" letter-spacing="1">ENTRY  LOGIC  (App.jsx)</text>
+
+  <!-- START -->
+  <rect x="82" y="94" width="150" height="30" fill="#0f172a" stroke="none" rx="15"/>
+  <text x="157" y="114" text-anchor="middle" font-size="9" font-weight="bold" fill="white">App loads in browser</text>
+
+  <!-- Arrow down -->
+  <line x1="157" y1="124" x2="157" y2="142" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Decision 1 -->
+  <polygon points="157,142  245,162  157,182  69,162" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="157" y="158" text-anchor="middle" font-size="8" fill="#78350f">share token</text>
+  <text x="157" y="170" text-anchor="middle" font-size="8" fill="#78350f">in URL?</text>
+
+  <!-- Yes branch right -->
+  <line x1="245" y1="162" x2="278" y2="162" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+  <text x="262" y="157" text-anchor="middle" font-size="7.5" fill="#16a34a">Yes</text>
+  <!-- SharedView label on right edge -->
+  <rect x="255" y="148" width="45" height="28" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="3"/>
+  <text x="278" y="160" text-anchor="middle" font-size="7" fill="#166534">Shared</text>
+  <text x="278" y="170" text-anchor="middle" font-size="7" fill="#166534">View</text>
+
+  <!-- No arrow down -->
+  <line x1="157" y1="182" x2="157" y2="200" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="167" y="194" font-size="7.5" fill="#64748b">No</text>
+
+  <!-- Decision 2 -->
+  <polygon points="157,200  245,220  157,240  69,220" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="157" y="216" text-anchor="middle" font-size="8" fill="#78350f">auth state</text>
+  <text x="157" y="228" text-anchor="middle" font-size="8" fill="#78350f">loading?</text>
+
+  <!-- Yes → SplashScreen -->
+  <line x1="245" y1="220" x2="278" y2="220" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+  <text x="262" y="215" text-anchor="middle" font-size="7.5" fill="#16a34a">Yes</text>
+  <rect x="255" y="206" width="45" height="28" fill="#f0f9ff" stroke="#38bdf8" stroke-width="1" rx="3"/>
+  <text x="278" y="218" text-anchor="middle" font-size="7" fill="#0369a1">Splash</text>
+  <text x="278" y="228" text-anchor="middle" font-size="7" fill="#0369a1">Screen</text>
+
+  <!-- Note: 6s timeout -->
+  <text x="157" y="254" text-anchor="middle" font-size="7" fill="#94a3b8">6-second hard timeout</text>
+
+  <!-- No arrow down -->
+  <line x1="157" y1="240" x2="157" y2="258" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="167" y="252" font-size="7.5" fill="#64748b">No</text>
+
+  <!-- Decision 3 -->
+  <polygon points="157,258  245,278  157,298  69,278" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="157" y="274" text-anchor="middle" font-size="8" fill="#78350f">user</text>
+  <text x="157" y="286" text-anchor="middle" font-size="8" fill="#78350f">authenticated?</text>
+
+  <!-- No → LoginScreen -->
+  <line x1="245" y1="278" x2="278" y2="278" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrRed)"/>
+  <text x="262" y="273" text-anchor="middle" font-size="7.5" fill="#dc2626">No</text>
+  <rect x="255" y="264" width="45" height="28" fill="#fef2f2" stroke="#f87171" stroke-width="1" rx="3"/>
+  <text x="278" y="276" text-anchor="middle" font-size="7" fill="#991b1b">Login</text>
+  <text x="278" y="286" text-anchor="middle" font-size="7" fill="#991b1b">Screen</text>
+
+  <!-- Yes arrow down -->
+  <line x1="157" y1="298" x2="157" y2="316" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+  <text x="167" y="310" font-size="7.5" fill="#16a34a">Yes</text>
+
+  <!-- Role check -->
+  <polygon points="157,316  230,333  157,350  84,333" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="157" y="329" text-anchor="middle" font-size="8" fill="#78350f">role?</text>
+  <text x="157" y="341" text-anchor="middle" font-size="7.5" fill="#78350f">(from profiles)</text>
+
+  <!-- Admin left -->
+  <line x1="84" y1="333" x2="48" y2="333" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="66" y="329" text-anchor="middle" font-size="7.5" fill="#1d4ed8">admin</text>
+  <rect x="20" y="345" width="56" height="22" fill="#eff6ff" stroke="#60a5fa" stroke-width="1" rx="3"/>
+  <text x="48" y="360" text-anchor="middle" font-size="7.5" fill="#1e40af">8 views</text>
+  <line x1="48" y1="333" x2="48" y2="345" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Helper right -->
+  <line x1="230" y1="333" x2="266" y2="333" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="248" y="329" text-anchor="middle" font-size="7.5" fill="#1d4ed8">helper</text>
+  <rect x="240" y="345" width="56" height="22" fill="#f0fdf4" stroke="#4ade80" stroke-width="1" rx="3"/>
+  <text x="268" y="360" text-anchor="middle" font-size="7.5" fill="#166534">2 views</text>
+  <line x1="268" y1="333" x2="268" y2="345" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══════════ RIGHT PANEL: Views Grid ══════════ -->
+  <rect x="318" y="52" width="430" height="356" fill="white" stroke="#e2e8f0" stroke-width="1.5" rx="8"/>
+  <rect x="318" y="52" width="430" height="28" fill="#334155" rx="8 8 0 0"/>
+  <text x="533" y="70" text-anchor="middle" font-size="9.5" font-weight="bold" fill="white" letter-spacing="1">INVENTORY APP  —  VIEWS  &amp;  MODALS</text>
+
+  <!-- Admin views label -->
+  <text x="333" y="100" font-size="8.5" font-weight="bold" fill="#1e40af">Admin Views  (8)</text>
+
+  <!-- View boxes: row 1 -->
+  <rect x="333" y="107" width="90" height="38" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5" rx="5"/>
+  <text x="378" y="123" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#1e40af">Dashboard</text>
+  <text x="378" y="136" text-anchor="middle" font-size="7.5" fill="#64748b">Stats + charts</text>
+
+  <rect x="432" y="107" width="90" height="38" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5" rx="5"/>
+  <text x="477" y="123" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#1e40af">Inventory</text>
+  <text x="477" y="136" text-anchor="middle" font-size="7.5" fill="#64748b">Item grid + filters</text>
+
+  <rect x="531" y="107" width="90" height="38" fill="#fff7ed" stroke="#fb923c" stroke-width="1.5" rx="5"/>
+  <text x="576" y="123" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#c2410c">Shopping</text>
+  <text x="576" y="136" text-anchor="middle" font-size="7.5" fill="#64748b">Low-stock list</text>
+
+  <rect x="630" y="107" width="104" height="38" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.5" rx="5"/>
+  <text x="682" y="123" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#15803d">Locations</text>
+  <text x="682" y="136" text-anchor="middle" font-size="7.5" fill="#64748b">Storage rooms</text>
+
+  <!-- View boxes: row 2 -->
+  <rect x="333" y="153" width="90" height="38" fill="#fefce8" stroke="#facc15" stroke-width="1.5" rx="5"/>
+  <text x="378" y="169" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#854d0e">Expiry</text>
+  <text x="378" y="182" text-anchor="middle" font-size="7.5" fill="#64748b">Calendar groups</text>
+
+  <rect x="432" y="153" width="90" height="38" fill="#faf5ff" stroke="#c084fc" stroke-width="1.5" rx="5"/>
+  <text x="477" y="169" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#7e22ce">Wishlist</text>
+  <text x="477" y="182" text-anchor="middle" font-size="7.5" fill="#64748b">Priority items</text>
+
+  <rect x="531" y="153" width="90" height="38" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.5" rx="5"/>
+  <text x="576" y="169" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#15803d">Tasks</text>
+  <text x="576" y="182" text-anchor="middle" font-size="7.5" fill="#64748b">Recurring chores</text>
+
+  <rect x="630" y="153" width="104" height="38" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" rx="5"/>
+  <text x="682" y="169" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#475569">Help</text>
+  <text x="682" y="182" text-anchor="middle" font-size="7.5" fill="#64748b">EN / Tagalog</text>
+
+  <!-- Helper views label -->
+  <text x="333" y="210" font-size="8.5" font-weight="bold" fill="#15803d">Helper Views  (2)</text>
+  <rect x="333" y="216" width="90" height="38" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.5" rx="5"/>
+  <text x="378" y="232" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#15803d">Tasks</text>
+  <text x="378" y="245" text-anchor="middle" font-size="7.5" fill="#64748b">Assigned only</text>
+
+  <rect x="432" y="216" width="90" height="38" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" rx="5"/>
+  <text x="477" y="232" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#475569">Help</text>
+  <text x="477" y="245" text-anchor="middle" font-size="7.5" fill="#64748b">EN / Tagalog</text>
+
+  <!-- Modals section -->
+  <line x1="333" y1="268" x2="734" y2="268" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="333" y="284" font-size="8.5" font-weight="bold" fill="#475569">Overlays  &amp;  Modals  (always available to Admin)</text>
+
+  <rect x="333" y="291" width="95" height="34" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+  <text x="380" y="305" text-anchor="middle" font-size="8" fill="#334155">ItemModal</text>
+  <text x="380" y="317" text-anchor="middle" font-size="7" fill="#94a3b8">Create / Edit item</text>
+
+  <rect x="437" y="291" width="95" height="34" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+  <text x="484" y="305" text-anchor="middle" font-size="8" fill="#334155">BarcodeScanner</text>
+  <text x="484" y="317" text-anchor="middle" font-size="7" fill="#94a3b8">Camera decode</text>
+
+  <rect x="541" y="291" width="95" height="34" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+  <text x="588" y="305" text-anchor="middle" font-size="8" fill="#334155">BulkImport</text>
+  <text x="588" y="317" text-anchor="middle" font-size="7" fill="#94a3b8">CSV upload</text>
+
+  <rect x="645" y="291" width="89" height="34" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+  <text x="689" y="305" text-anchor="middle" font-size="8" fill="#334155">ShareModal</text>
+  <text x="689" y="317" text-anchor="middle" font-size="7" fill="#94a3b8">Token generate</text>
+
+  <rect x="333" y="334" width="95" height="34" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+  <text x="380" y="348" text-anchor="middle" font-size="8" fill="#334155">CategoryModal</text>
+  <text x="380" y="360" text-anchor="middle" font-size="7" fill="#94a3b8">Add category</text>
+
+  <rect x="437" y="334" width="95" height="34" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+  <text x="484" y="348" text-anchor="middle" font-size="8" fill="#334155">LocationsManager</text>
+  <text x="484" y="360" text-anchor="middle" font-size="7" fill="#94a3b8">Add / delete</text>
+
+  <rect x="541" y="334" width="242" height="34" fill="#f0fdf4" stroke="#4ade80" stroke-width="1" rx="4"/>
+  <text x="662" y="348" text-anchor="middle" font-size="8" fill="#166534">SharedView  (public, no auth required)</text>
+  <text x="662" y="360" text-anchor="middle" font-size="7" fill="#94a3b8">Read-only shopping list via share token</text>
+
+  <rect x="333" y="377" width="401" height="22" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1" rx="4"/>
+  <text x="533" y="392" text-anchor="middle" font-size="7.5" fill="#64748b">AI Scan button inside ItemModal  →  POST /api/scan  →  Claude Haiku Vision  →  auto-fills name / unit / notes</text>
+</svg>

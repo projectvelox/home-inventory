@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback, useEffect, lazy, Suspense } from 'react'
+import React, { useState, useRef, useMemo, useCallback, useEffect, lazy, Suspense, Component } from 'react'
 import Header from './components/Header'
 import CategoryBar from './components/CategoryBar'
 import ItemCard from './components/ItemCard'
@@ -28,6 +28,29 @@ const ShareModal  = lazy(() => import('./components/ShareModal'))
 const TasksPage   = lazy(() => import('./components/TasksPage'))
 const HelpPage    = lazy(() => import('./components/HelpPage'))
 
+// ─── Error Boundary ──────────────────────────────────────────
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null } }
+  static getDerivedStateFromError(error) { return { error } }
+  render() {
+    if (!this.state.error) return this.props.children
+    return (
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center px-6 text-center"
+           style={{ background: 'linear-gradient(160deg, #fdf2f8 0%, #f3e8ff 50%, #f0fdf4 100%)' }}>
+        <div className="text-5xl mb-4">😔</div>
+        <h2 className="font-title text-2xl text-blush-400 mb-2">Something went wrong</h2>
+        <p className="font-sans text-sm text-gray-400 mb-6 max-w-xs">
+          {this.state.error?.message ?? 'An unexpected error occurred.'}
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-6 py-3 rounded-2xl font-sans font-bold text-sm text-white bg-gradient-to-r from-blush-300 to-lavender-400 shadow-md"
+        >Reload app</button>
+      </div>
+    )
+  }
+}
+
 // ─── Root ────────────────────────────────────────────────────
 export default function App() {
   const shareToken = useMemo(() => new URLSearchParams(window.location.search).get('share'), [])
@@ -36,7 +59,7 @@ export default function App() {
   if (shareToken) return <SharedView token={shareToken} />
   if (loading)    return <SplashScreen />
   if (!user)      return <LoginScreen onLogin={login} />
-  return <InventoryApp user={user} onLogout={logout} />
+  return <ErrorBoundary><InventoryApp user={user} onLogout={logout} /></ErrorBoundary>
 }
 
 // ─── Skeleton card (shimmer placeholder) ─────────────────────

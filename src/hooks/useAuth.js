@@ -29,6 +29,20 @@ async function fetchProfileWithRetry(userId) {
   return null
 }
 
+// Build a minimal user object from the JWT user_metadata when the DB is unavailable
+function profileFromSession(session) {
+  const meta = session?.user?.user_metadata ?? {}
+  const rawAvatar = meta.avatar ?? ''
+  // Reject garbage avatar values like "??" — use fallback emoji instead
+  const avatar = rawAvatar && !rawAvatar.includes('?') ? rawAvatar : '👤'
+  return {
+    id:          session.user.id,
+    displayName: meta.display_name ?? 'User',
+    avatar,
+    role:        meta.role ?? 'helper',
+  }
+}
+
 export function useAuth() {
   const [user, setUser]       = useState(null)
   const [loading, setLoading] = useState(true)
@@ -47,7 +61,7 @@ export function useAuth() {
       if (!mountedRef.current) return
       if (session?.user) {
         const profile = await fetchProfileWithRetry(session.user.id)
-        if (mountedRef.current) setUser(profile)
+        if (mountedRef.current) setUser(profile ?? profileFromSession(session))
       }
       clearTimeout(timeout)
       if (mountedRef.current) setLoading(false)
@@ -56,18 +70,18 @@ export function useAuth() {
       if (mountedRef.current) setLoading(false)
     })
 
-    // Listen for auth state changes — single subscription for the lifetime of the app
+    // Single subscription for the lifetime of the app
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mountedRef.current) return
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          // Only update if the user actually changed (avoids redundant profile fetches on token refresh)
+          // Fetch full profile; fall back to JWT metadata so a slow DB never logs the user out
           const profile = await fetchProfileWithRetry(session.user.id)
-          if (mountedRef.current) setUser(profile)
+          if (mountedRef.current) setUser(profile ?? profileFromSession(session))
         } else if (event === 'SIGNED_OUT') {
           if (mountedRef.current) {
             setUser(null)
-            setLoading(false) // ensure loading is cleared if sign-out during startup
+            setLoading(false)
           }
         }
       }
@@ -82,22 +96,19 @@ export function useAuth() {
 
   async function login(email, password) {
     // Trim whitespace/newlines — env vars can carry trailing \n which causes invalid_credentials
-    const cleanEmail = (email ?? '').trim()
+    const cleanEmail    = (email    ?? '').trim()
     const cleanPassword = (password ?? '').trim()
-    // Race the login request against a 15-second timeout so it never hangs indefinitely
+
+    // Race signInWithPassword against a 15-second timeout
     const loginPromise = supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword })
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Login timed out — check your connection and try again.')), 15000)
     )
     try {
-      const { data, error } = await Promise.race([loginPromise, timeoutPromise])
-      if (error) return error.message ?? 'Login failed'
-      // Eagerly fetch + set profile so the UI transitions immediately
-      // (don't wait for onAuthStateChange which fires slightly later)
-      if (data?.user) {
-        const profile = await fetchProfileWithRetry(data.user.id)
-        if (mountedRef.current && profile) setUser(profile)
-      }
+      const { error } = await Promise.race([loginPromise, timeoutPromise])
+      if (error) return error.message
+      // Profile will be set by the onAuthStateChange SIGNED_IN handler above —
+      // returning null immediately lets the LoginScreen stop spinning right away
       return null
     } catch (e) {
       return e.message
@@ -110,7 +121,7 @@ export function useAuth() {
     try {
       await supabase.auth.signOut()
     } catch {
-      // If the network signOut fails, force-clear the local session so re-login works
+      // If network signOut fails, force-clear the local session so re-login works
       supabase.auth.signOut({ scope: 'local' }).catch(() => {})
     }
   }

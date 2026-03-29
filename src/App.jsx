@@ -798,6 +798,7 @@ function InventoryApp({ user, onLogout }) {
               onSelect={setSelectedCategory}
               onManage={() => setShowCategoryModal(true)}
               canManage={permissions.canManageCategories}
+              items={items}
             />
 
             <main className="flex-1 px-4 lg:px-8 pb-4">

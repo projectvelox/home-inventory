@@ -24,7 +24,7 @@ function ProgressBar({ done, total }) {
 }
 
 // ─── Task Card ────────────────────────────────────────────────
-function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone }) {
+function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone, isOverdue }) {
   const meta     = catMeta(task.category)
   const isDone   = task.status === 'done'
   const doneTime = task.completedAt
@@ -32,7 +32,8 @@ function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone 
     : null
 
   return (
-    <div className={`group bg-white dark:bg-gray-800 rounded-2xl shadow-card p-3.5 flex items-center gap-3 transition-all ${isDone ? 'opacity-55' : 'hover:shadow-card-md'}`}>
+    <div className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-card p-3.5 flex items-center gap-3 transition-all overflow-hidden ${isDone ? 'opacity-55' : 'hover:shadow-card-md'} ${isOverdue ? 'ring-1 ring-red-100 dark:ring-red-500/20' : ''}`}>
+      {isOverdue && <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-400 rounded-l-2xl" />}
 
       {/* Quick-done circle (helper) or category emoji (admin/done) */}
       {onQuickDone && !isDone ? (
@@ -569,7 +570,7 @@ function CreateTemplateSheet({ existing, onSave, onClose }) {
 }
 
 // ─── Helper: task list for a date range ───────────────────────
-function HelperTaskList({ tasks, today, onComplete }) {
+function HelperTaskList({ tasks, today, onComplete, tabId }) {
   const [selectedTask, setSelectedTask] = useState(null)
 
   const grouped = useMemo(() => {
@@ -582,11 +583,18 @@ function HelperTaskList({ tasks, today, onComplete }) {
   }, [tasks])
 
   if (tasks.length === 0) {
+    const emptyIcon    = tabId === 'today' ? '☀️' : tabId === 'week' ? '📅' : '🗓️'
+    const emptyTitle   = tabId === 'today' ? 'No tasks today' : tabId === 'week' ? 'Nothing this week' : 'Nothing this month'
+    const emptySubline = tabId === 'today'
+      ? 'Enjoy your day! Your admin will assign tasks when they\'re ready.'
+      : 'No tasks scheduled for this period yet.'
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-5xl mb-3">🎉</div>
-        <p className="font-sans font-semibold text-gray-500 dark:text-gray-400">No tasks here</p>
-        <p className="font-sans text-sm text-gray-400 mt-1">Enjoy your free time!</p>
+      <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-lavender-50 to-blush-50 dark:from-lavender-500/10 dark:to-blush-500/10 flex items-center justify-center text-4xl mb-4 shadow-sm">
+          {emptyIcon}
+        </div>
+        <p className="font-sans font-bold text-base text-gray-600 dark:text-gray-300 mb-1">{emptyTitle}</p>
+        <p className="font-sans text-sm text-gray-400 dark:text-gray-500 leading-relaxed">{emptySubline}</p>
       </div>
     )
   }
@@ -606,7 +614,10 @@ function HelperTaskList({ tasks, today, onComplete }) {
           <div key={date}>
             {/* Date header */}
             <div className="flex items-center gap-2 mb-2 px-1">
-              <p className={`font-sans text-xs font-bold uppercase tracking-wide ${isToday ? 'text-blush-400' : isPast ? 'text-gray-400' : 'text-lavender-400'}`}>{label}</p>
+              <p className={`font-sans text-xs font-bold uppercase tracking-wide ${isToday ? 'text-blush-400' : isPast && pending.length > 0 ? 'text-red-400' : isPast ? 'text-gray-400' : 'text-lavender-400'}`}>{label}</p>
+              {isPast && pending.length > 0 && (
+                <span className="font-sans text-[10px] font-bold text-red-400">⚠️ {pending.length} late</span>
+              )}
               <span className={`font-sans text-[10px] font-bold px-1.5 py-0.5 rounded-full ${done.length === dayTasks.length && dayTasks.length > 0 ? 'bg-mint-50 dark:bg-mint-500/10 text-mint-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-400'}`}>
                 {done.length}/{dayTasks.length}
               </span>
@@ -617,7 +628,7 @@ function HelperTaskList({ tasks, today, onComplete }) {
               <div className="mb-3"><ProgressBar done={done.length} total={dayTasks.length} /></div>
             )}
 
-            {/* Pending tasks — quick-done button enabled */}
+            {/* Pending tasks — quick-done button enabled; red border if past */}
             {pending.length > 0 && (
               <div className="space-y-2 mb-2">
                 {pending.map(task => (
@@ -626,6 +637,7 @@ function HelperTaskList({ tasks, today, onComplete }) {
                     onTap={setSelectedTask}
                     onDelete={() => {}} canDelete={false}
                     onQuickDone={id => onComplete(id, {})}
+                    isOverdue={isPast}
                   />
                 ))}
               </div>
@@ -750,7 +762,7 @@ function HelperView({ user, tasks, onComplete }) {
         ))}
       </div>
 
-      <HelperTaskList tasks={visibleTasks} today={today} onComplete={onComplete} />
+      <HelperTaskList tasks={visibleTasks} today={today} onComplete={onComplete} tabId={tab} />
     </div>
   )
 }
@@ -831,23 +843,27 @@ function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComp
       {overdueTasks.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
+            <span className="text-base">⚠️</span>
             <p className="font-sans text-xs font-bold uppercase tracking-wide text-red-400">Overdue</p>
             <span className="font-sans text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-400">
               {overdueTasks.length}
             </span>
           </div>
           <div className="space-y-2">
-            {overdueTasks.map(t => (
-              <div key={t.id} className="relative">
-                <TaskCard
-                  task={t} onTap={setSelected} onDelete={onDelete} canDelete
-                  assigneeName={t.assignedTo ? assigneeMap[t.assignedTo] : null}
-                />
-                <span className="absolute -top-1 -left-1 font-sans text-[9px] font-bold text-red-400 bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded-full border border-red-100 dark:border-red-500/20">
-                  {new Date(t.dueDate + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                </span>
-              </div>
-            ))}
+            {overdueTasks.map(t => {
+              const daysAgo = Math.round((new Date(today) - new Date(t.dueDate)) / 86400000)
+              return (
+                <div key={t.id}>
+                  <p className="font-sans text-[10px] text-red-400 font-semibold mb-1 ml-1">
+                    {daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`} · {new Date(t.dueDate + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  </p>
+                  <TaskCard
+                    task={t} onTap={setSelected} onDelete={onDelete} canDelete isOverdue
+                    assigneeName={t.assignedTo ? assigneeMap[t.assignedTo] : null}
+                  />
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -885,8 +901,10 @@ function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComp
 
             {/* Empty today */}
             {isToday && dayTasks.length === 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card px-4 py-4 text-center">
-                <p className="font-sans text-sm text-gray-400">No tasks for today</p>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card px-4 py-6 text-center">
+                <p className="text-3xl mb-2">📅</p>
+                <p className="font-sans font-semibold text-sm text-gray-500 dark:text-gray-400">No tasks today</p>
+                <p className="font-sans text-xs text-gray-400 mt-0.5">Assign a template or add a task using the button above.</p>
               </div>
             )}
 

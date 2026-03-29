@@ -1,6 +1,6 @@
 ---
 title: "My Home Haven"
-subtitle: "Technical Design Document - v3.2.0"
+subtitle: "Technical Design Document - v3.2.1"
 author: "Development Team"
 date: "29 March 2026"
 ---
@@ -8,7 +8,7 @@ date: "29 March 2026"
 | | |
 |---|---|
 | **Project** | My Home Haven - Household Inventory PWA |
-| **Current Version** | 3.2.0 |
+| **Current Version** | 3.2.1 |
 | **Document Status** | Living Document - updated with every release |
 | **Last Updated** | 29 March 2026 |
 | **Author** | Development Team |
@@ -497,6 +497,9 @@ Assignment dropdown now includes all profiles (admin + helper) — admins can be
 
 **v3.2.0**
 useAuth overhaul: login() no longer blocks on profile fetch — signInWithPassword returns immediately, profile is set by onAuthStateChange handler. onAuthStateChange falls back to JWT user_metadata when DB profile fetch fails so a slow network never logs the user out mid-session. ErrorBoundary class component added to App.jsx wrapping InventoryApp — render crashes show a friendly "Reload app" screen instead of a blank white page.
+
+**v3.2.1**
+Fix Supabase Web Lock contention: supabase.js now passes a no-op lock function so the auth client bypasses navigator.locks entirely. Eliminates "lock was stolen" errors that appeared when two tabs (or a cached page + new deploy) initialized simultaneously — the error was causing signInWithPassword to throw even when the HTTP request succeeded, making the app show "Wrong password" for a correct login.
 
 ---
 

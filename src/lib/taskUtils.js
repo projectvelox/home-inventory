@@ -35,6 +35,12 @@ export const CATEGORY_META = {
   other:    { label: 'Other',     labelFil: 'Iba Pa',      emoji: '✅' },
 }
 
+export const RECUR_META = {
+  none:    { label: 'One-time',      short: '',        emoji: '' },
+  daily:   { label: 'Repeats daily', short: 'Daily',   emoji: '🔁' },
+  weekly:  { label: 'Repeats weekly',short: 'Weekly',  emoji: '🔁' },
+}
+
 export const TEMPLATE_COLORS = [
   '#fda4af', '#c4b5fd', '#6ee7b7', '#fcd34d', '#93c5fd', '#f9a8d4',
 ]

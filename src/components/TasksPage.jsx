@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react'
 import { useTasks } from '../hooks/useTasks'
-import { localToday, compressImage, CATEGORY_META, TEMPLATE_COLORS, TEMPLATE_EMOJIS } from '../lib/taskUtils'
+import { localToday, compressImage, CATEGORY_META, RECUR_META, TEMPLATE_COLORS, TEMPLATE_EMOJIS } from '../lib/taskUtils'
 
 // ─── Shared helpers ───────────────────────────────────────────
 function catMeta(cat) { return CATEGORY_META[cat] ?? CATEGORY_META.other }
@@ -58,6 +58,11 @@ function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone 
         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
           {assigneeName && (
             <span className="font-sans text-[10px] font-semibold text-lavender-500 bg-lavender-50 dark:bg-lavender-500/10 px-1.5 py-0.5 rounded-full">{assigneeName}</span>
+          )}
+          {task.recurType && task.recurType !== 'none' && (
+            <span className="font-sans text-[10px] font-semibold text-sky-500 bg-sky-50 dark:bg-sky-500/10 px-1.5 py-0.5 rounded-full">
+              🔁 {RECUR_META[task.recurType]?.short ?? task.recurType}
+            </span>
           )}
           {task.estimatedMins && !isDone && (
             <span className="font-sans text-[10px] text-gray-400">⏱ {task.estimatedMins}m</span>
@@ -292,6 +297,7 @@ function CreateTaskSheet({ helperProfiles, existing, onSave, onClose }) {
     assignedTo:    existing?.assignedTo ?? helperProfiles[0]?.id ?? '',
     dueDate:       existing?.dueDate                       ?? localToday(),
     estimatedMins: existing?.estimatedMins != null ? String(existing.estimatedMins) : '',
+    recurType:     existing?.recurType                     ?? 'none',
   })
   const [saving,    setSaving]    = useState(false)
   const [titleErr,  setTitleErr]  = useState(false)
@@ -378,6 +384,26 @@ function CreateTaskSheet({ helperProfiles, existing, onSave, onClose }) {
               />
             </div>
           </div>
+          {/* Recurrence */}
+          <div>
+            <label className="font-sans text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1.5">Recurrence</label>
+            <div className="flex gap-2">
+              {Object.entries(RECUR_META).map(([key, meta]) => (
+                <button
+                  key={key} type="button"
+                  onClick={() => set('recurType', key)}
+                  className={`flex-1 py-2 rounded-xl font-sans font-semibold text-xs border-2 transition-all ${
+                    form.recurType === key
+                      ? 'border-sky-300 bg-sky-50 dark:bg-sky-500/10 text-sky-500'
+                      : 'border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-200'
+                  }`}
+                >
+                  {meta.emoji ? `${meta.emoji} ` : ''}{key === 'none' ? 'One-time' : meta.short}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {saveErr && (
             <p className="font-sans text-xs text-red-500 bg-red-50 dark:bg-red-500/10 rounded-xl px-3 py-2">{saveErr}</p>
           )}
@@ -400,6 +426,7 @@ function CreateTemplateSheet({ existing, onSave, onClose }) {
     description: existing?.description ?? '',
     color:       existing?.color       ?? TEMPLATE_COLORS[0],
     emoji:       existing?.emoji       ?? TEMPLATE_EMOJIS[0],
+    recurType:   existing?.recurType   ?? 'none',
   })
   const [items,   setItems]   = useState(
     existing?.items ?? [{ title: '', category: 'cleaning', estimatedMins: '' }]
@@ -464,6 +491,26 @@ function CreateTemplateSheet({ existing, onSave, onClose }) {
                   className={`w-8 h-8 rounded-full transition-all ${form.color === c ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''}`}
                   style={{ backgroundColor: c }}
                 />
+              ))}
+            </div>
+          </div>
+
+          {/* Recurrence */}
+          <div>
+            <p className="font-sans text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Recurrence</p>
+            <div className="flex gap-2">
+              {Object.entries(RECUR_META).map(([key, meta]) => (
+                <button
+                  key={key} type="button"
+                  onClick={() => setF('recurType', key)}
+                  className={`flex-1 py-2 rounded-xl font-sans font-semibold text-xs border-2 transition-all ${
+                    form.recurType === key
+                      ? 'border-sky-300 bg-sky-50 dark:bg-sky-500/10 text-sky-500'
+                      : 'border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-200'
+                  }`}
+                >
+                  {meta.emoji ? `${meta.emoji} ` : ''}{key === 'none' ? 'One-time' : meta.short}
+                </button>
               ))}
             </div>
           </div>

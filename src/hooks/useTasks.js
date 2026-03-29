@@ -146,8 +146,8 @@ export function useTasks(userId, role) {
       due_date:       taskData.dueDate        || localToday(),
       estimated_mins: taskData.estimatedMins  || null,
       sort_order:     tasks.length,
-      recur_type:     'none',
-      recur_days:     null,
+      recur_type:     taskData.recurType      || 'none',
+      recur_days:     taskData.recurDays      ?? null,
     }]).select().single()
     if (error) {
       console.error('createTask error:', error.message, error)
@@ -207,6 +207,8 @@ export function useTasks(userId, role) {
       assigned_to:    taskData.assignedTo     || null,
       due_date:       taskData.dueDate        || localToday(),
       estimated_mins: taskData.estimatedMins  || null,
+      recur_type:     taskData.recurType      || 'none',
+      recur_days:     taskData.recurDays      ?? null,
     }).eq('id', id)
     if (error) {
       console.error('updateTask error:', error.message, error)
@@ -224,7 +226,7 @@ export function useTasks(userId, role) {
       color:       tmplData.color       || '#c4b5fd',
       emoji:       tmplData.emoji       || '📋',
       created_by:  userId,
-      recur_type:  'none',
+      recur_type:  tmplData.recurType   || 'none',
     }]).select().single()
     if (tmplErr || !tmpl) {
       console.error('createTemplate error:', tmplErr?.message, tmplErr)
@@ -257,6 +259,7 @@ export function useTasks(userId, role) {
       description: tmplData.description || null,
       color:       tmplData.color,
       emoji:       tmplData.emoji,
+      recur_type:  tmplData.recurType   || 'none',
     }).eq('id', id)
     if (upErr) {
       console.error('updateTemplate error:', upErr.message, upErr)

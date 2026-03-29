@@ -10,7 +10,7 @@ function formatRestocked(iso) {
   return `${Math.floor(diffDays / 30)}mo ago`
 }
 
-export default function ItemCard({ item, category, onEdit, onUpdateQty }) {
+export default function ItemCard({ item, category, onEdit, onUpdateQty, canEdit }) {
   const isLow = item.qty <= item.restockQty && item.restockQty > 0
   const isEmpty = item.qty === 0
   const [editingQty, setEditingQty] = useState(false)
@@ -52,12 +52,14 @@ export default function ItemCard({ item, category, onEdit, onUpdateQty }) {
             {isEmpty ? '😱 Empty!' : '⚠️ Low!'}
           </div>
         )}
-        <button
-          onClick={() => onEdit(item)}
-          className="absolute top-2 right-2 w-8 h-8 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-sm hover:bg-white shadow transition-all"
-        >
-          ✏️
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => onEdit(item)}
+            className="absolute top-2 right-2 w-8 h-8 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-sm hover:bg-white shadow transition-all"
+          >
+            ✏️
+          </button>
+        )}
       </div>
 
       {/* Content */}

@@ -9,9 +9,22 @@
 body {
   font-family: 'Nunito', sans-serif;
   background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 50%, #f0fdf4 100%);
-  min-height: 100vh;
+  min-height: 100dvh;
+  /* Prevent elastic bounce showing white on overscroll */
+  overscroll-behavior: none;
 }
 
+/* Prevent iOS Safari from zooming in on input focus.
+   Input font-size must be >= 16px to avoid auto-zoom. */
+@supports (-webkit-touch-callout: none) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

@@ -6,12 +6,24 @@ import ItemModal from './components/ItemModal'
 import CategoryModal from './components/CategoryModal'
 import EmptyState from './components/EmptyState'
 import ShoppingList from './components/ShoppingList'
+import LoginScreen from './components/LoginScreen'
 import { useInventory } from './hooks/useInventory'
 import { usePWAInstall } from './hooks/usePWAInstall'
+import { useAuth } from './hooks/useAuth'
 
 export default function App() {
+  const { user, login, logout } = useAuth()
   const { items, categories, lowStockItems, addItem, updateItem, deleteItem, addCategory } = useInventory()
   const { canInstall, install, dismiss } = usePWAInstall()
+
+  const isAdmin = user?.role === 'admin'
+  const permissions = {
+    canAdd: isAdmin,
+    canEdit: isAdmin,
+    canDelete: isAdmin,
+    canManageCategories: isAdmin,
+    canUpdateQty: true,
+  }
 
   const [view, setView] = useState('inventory')
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -21,7 +33,10 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('low-stock')
 
-  const filteredItems = useMemo(() => {
+  // Show login if not authenticated
+  if (!user) return <LoginScreen onLogin={login} />
+
+  const filteredItems = (() => {
     let result = selectedCategory === 'all'
       ? items
       : items.filter(i => i.categoryId === selectedCategory)
@@ -42,7 +57,6 @@ export default function App() {
         new Date(b.updatedAt ?? b.createdAt ?? 0) - new Date(a.updatedAt ?? a.createdAt ?? 0)
       )
     } else {
-      // low-stock first
       result = [...result].sort((a, b) => {
         const aLow = a.qty <= a.restockQty && a.restockQty > 0 ? 0 : 1
         const bLow = b.qty <= b.restockQty && b.restockQty > 0 ? 0 : 1
@@ -50,9 +64,8 @@ export default function App() {
         return a.name.localeCompare(b.name)
       })
     }
-
     return result
-  }, [items, selectedCategory, searchQuery, sortBy])
+  })()
 
   function handleSave(itemData) {
     if (itemData.id) {
@@ -76,8 +89,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen pb-24">
-      <Header lowStockCount={lowStockItems.length} />
+    <div className="min-h-[100dvh] pb-[max(96px,calc(96px+env(safe-area-inset-bottom,0px)))]">
+      <Header lowStockCount={lowStockItems.length} user={user} onLogout={logout} />
 
       {/* PWA install banner */}
       {canInstall && (
@@ -88,17 +101,10 @@ export default function App() {
               <p className="font-cute font-bold text-sm text-lavender-500">Add to home screen!</p>
               <p className="font-cute text-xs text-gray-400">Quick access without opening the browser</p>
             </div>
-            <button
-              onClick={install}
-              className="flex-shrink-0 px-3 py-1.5 rounded-xl font-cute font-bold text-xs text-white bg-lavender-400 hover:bg-lavender-500 transition-all"
-            >
+            <button onClick={install} className="flex-shrink-0 px-3 py-1.5 rounded-xl font-cute font-bold text-xs text-white bg-lavender-400 hover:bg-lavender-500 transition-all">
               Install
             </button>
-            <button
-              onClick={dismiss}
-              aria-label="Dismiss install banner"
-              className="flex-shrink-0 w-6 h-6 rounded-full bg-white/70 flex items-center justify-center text-gray-400 hover:bg-white text-xs"
-            >
+            <button onClick={dismiss} aria-label="Dismiss install banner" className="flex-shrink-0 w-7 h-7 rounded-full bg-white/70 flex items-center justify-center text-gray-400 hover:bg-white text-xs">
               ✕
             </button>
           </div>
@@ -110,15 +116,15 @@ export default function App() {
         <div className="flex gap-2 p-1 bg-white/60 rounded-2xl shadow-sm">
           <button
             onClick={() => setView('inventory')}
-            className={`flex-1 py-2 rounded-xl font-cute font-bold text-sm transition-all ${view === 'inventory' ? 'bg-white shadow text-blush-400' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`flex-1 py-3 rounded-xl font-cute font-bold text-sm transition-all ${view === 'inventory' ? 'bg-white shadow text-blush-400' : 'text-gray-400 hover:text-gray-600'}`}
           >
             🏠 Inventory
           </button>
           <button
             onClick={() => setView('shopping')}
-            className={`flex-1 py-2 rounded-xl font-cute font-bold text-sm transition-all relative ${view === 'shopping' ? 'bg-white shadow text-peach-400' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`flex-1 py-3 rounded-xl font-cute font-bold text-sm transition-all relative ${view === 'shopping' ? 'bg-white shadow text-peach-400' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            🛒 Shopping
+            🛒 To Buy
             {lowStockItems.length > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-peach-400 text-white text-xs font-cute font-bold flex items-center justify-center">
                 {lowStockItems.length}
@@ -139,14 +145,10 @@ export default function App() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search items, notes, location..."
-                className="w-full pl-9 pr-8 py-2.5 rounded-2xl border-2 border-white/80 bg-white/70 font-cute text-sm focus:outline-none focus:border-lavender-300 focus:bg-white transition-all placeholder-gray-300"
+                className="w-full pl-9 pr-8 py-3 rounded-2xl border-2 border-white/80 bg-white/70 font-cute text-base focus:outline-none focus:border-lavender-300 focus:bg-white transition-all placeholder-gray-300"
               />
               {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear search"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 text-sm"
-                >
+                <button onClick={() => setSearchQuery('')} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
                   ✕
                 </button>
               )}
@@ -158,11 +160,12 @@ export default function App() {
             selected={selectedCategory}
             onSelect={setSelectedCategory}
             onManage={() => setShowCategoryModal(true)}
+            canManage={permissions.canManageCategories}
           />
 
           <main className="max-w-2xl mx-auto px-4">
             {filteredItems.length === 0 && !searchQuery ? (
-              <EmptyState onAdd={() => setShowAddModal(true)} />
+              <EmptyState onAdd={permissions.canAdd ? () => setShowAddModal(true) : null} />
             ) : (
               <>
                 <div className="flex items-center justify-between mb-3">
@@ -170,7 +173,6 @@ export default function App() {
                     {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
                     {lowStockItems.length > 0 && ` · ${lowStockItems.length} low`}
                   </p>
-                  {/* Sort controls */}
                   <div className="flex items-center gap-1">
                     {[
                       { key: 'low-stock', label: '⚠️', title: 'Low stock first' },
@@ -181,7 +183,7 @@ export default function App() {
                         key={key}
                         title={title}
                         onClick={() => setSortBy(key)}
-                        className={`px-2 py-1 rounded-lg font-cute font-bold text-xs transition-all ${sortBy === key ? 'bg-blush-100 text-blush-400 shadow-sm' : 'text-gray-300 hover:text-gray-500'}`}
+                        className={`px-2.5 py-1.5 rounded-lg font-cute font-bold text-xs transition-all ${sortBy === key ? 'bg-blush-100 text-blush-400 shadow-sm' : 'text-gray-300 hover:text-gray-500'}`}
                       >
                         {label}
                       </button>
@@ -204,6 +206,7 @@ export default function App() {
                         onEdit={setEditingItem}
                         onDelete={handleDelete}
                         onUpdateQty={(id, qty) => updateItem(id, { qty })}
+                        canEdit={permissions.canEdit}
                       />
                     ))}
                   </div>
@@ -224,11 +227,12 @@ export default function App() {
         </div>
       )}
 
-      {/* FAB — inventory view only */}
-      {view === 'inventory' && (
+      {/* FAB — admin only */}
+      {view === 'inventory' && permissions.canAdd && (
         <button
           onClick={() => setShowAddModal(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-blush-300 to-lavender-400 text-white text-2xl shadow-lg hover:shadow-xl hover:scale-110 transition-all flex items-center justify-center z-40"
+          className="fixed right-5 w-14 h-14 rounded-full bg-gradient-to-br from-blush-300 to-lavender-400 text-white text-2xl shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center z-40"
+          style={{ bottom: 'max(24px, calc(24px + env(safe-area-inset-bottom, 0px)))' }}
           aria-label="Add item"
         >
           +
@@ -236,7 +240,7 @@ export default function App() {
       )}
 
       {/* Modals */}
-      {(showAddModal || editingItem) && (
+      {(showAddModal || editingItem) && permissions.canEdit && (
         <ItemModal
           item={editingItem}
           categories={categories}
@@ -245,7 +249,7 @@ export default function App() {
           onClose={() => { setEditingItem(null); setShowAddModal(false) }}
         />
       )}
-      {showCategoryModal && (
+      {showCategoryModal && permissions.canManageCategories && (
         <CategoryModal
           onAdd={addCategory}
           onClose={() => setShowCategoryModal(false)}

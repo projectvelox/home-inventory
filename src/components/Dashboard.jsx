@@ -13,23 +13,26 @@ function timeAgo(iso) {
   return `${Math.floor(days / 7)}w ago`
 }
 
-function StatCard({ icon, value, label, sub, colorClass, trend }) {
-  // trend: { delta: number, label: string } — positive = up, negative = down, null = no trend
+function StatCard({ icon, value, label, sub, gradient, textColor, trend }) {
   const trendIcon  = trend == null ? null : trend.delta > 0 ? '↑' : trend.delta < 0 ? '↓' : '→'
-  const trendColor = trend == null ? '' : trend.delta > 0 ? 'text-red-400' : trend.delta < 0 ? 'text-mint-500' : 'opacity-50'
+  const trendColor = trend == null ? '' : trend.delta > 0 ? 'text-red-300' : trend.delta < 0 ? 'text-green-300' : 'opacity-50'
   return (
-    <div className={`rounded-2xl p-4 ${colorClass}`}>
-      <div className="text-2xl mb-2">{icon}</div>
-      <div className="flex items-end gap-1.5">
-        <div className="font-sans font-bold text-2xl leading-none">{value}</div>
-        {trendIcon && (
-          <span className={`font-sans font-bold text-sm leading-snug mb-0.5 ${trendColor}`}>
-            {trendIcon} {Math.abs(trend.delta)}
-          </span>
-        )}
+    <div className={`rounded-2xl p-4 relative overflow-hidden ${gradient}`}>
+      {/* Background decorative circle */}
+      <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-10 bg-white" />
+      <div className="relative z-10">
+        <span className="text-xl block mb-2 leading-none">{icon}</span>
+        <div className="flex items-end gap-1.5">
+          <span className={`font-sans font-extrabold text-[1.6rem] leading-none ${textColor}`}>{value}</span>
+          {trendIcon && (
+            <span className={`font-sans font-bold text-sm leading-snug mb-0.5 ${trendColor}`}>
+              {trendIcon}{Math.abs(trend.delta)}
+            </span>
+          )}
+        </div>
+        <p className={`font-sans font-semibold text-xs mt-1.5 ${textColor} opacity-80`}>{label}</p>
+        {sub && <p className={`font-sans text-[10px] mt-0.5 ${textColor} opacity-55`}>{sub}</p>}
       </div>
-      <div className="font-sans font-semibold text-sm mt-1 opacity-80">{label}</div>
-      {sub && <div className="font-sans text-xs opacity-60 mt-0.5">{sub}</div>}
     </div>
   )
 }
@@ -115,35 +118,42 @@ export default function Dashboard({ items, categories, lowStockItems, expiringIt
     <div className="max-w-3xl mx-auto px-4 lg:px-8 pb-10 animate-fade-in">
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4 auto-rows-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4">
         <StatCard
           icon="📦" value={items.length} label="Total Items"
-          colorClass="bg-blush-50 dark:bg-blush-500/10 text-blush-500"
+          gradient="bg-gradient-to-br from-blush-300 to-blush-400"
+          textColor="text-white"
           trend={trends.items !== 0 ? { delta: trends.items } : null}
         />
         <StatCard
           icon="⚠️" value={lowStockItems.length} label="Low Stock"
           sub={`${lowPct}% of inventory`}
-          colorClass="bg-peach-50 dark:bg-peach-500/10 text-peach-500"
+          gradient={lowStockItems.length > 0
+            ? 'bg-gradient-to-br from-peach-300 to-peach-400'
+            : 'bg-gradient-to-br from-mint-300 to-mint-400'}
+          textColor="text-white"
           trend={trends.lowStock !== 0 ? { delta: trends.lowStock } : null}
         />
         <StatCard
           icon="📅" value={expiringItems.length} label="Expiring Soon"
           sub="within 7 days"
-          colorClass={expiringItems.length > 0
-            ? 'bg-red-50 dark:bg-red-500/10 text-red-500'
-            : 'bg-mint-50 dark:bg-mint-500/10 text-mint-600'}
+          gradient={expiringItems.length > 0
+            ? 'bg-gradient-to-br from-red-400 to-red-500'
+            : 'bg-gradient-to-br from-lavender-300 to-lavender-400'}
+          textColor="text-white"
         />
         <StatCard
           icon="💰" value={totalValue > 0 ? `$${totalValue.toFixed(0)}` : '—'} label="Est. Value"
-          sub={totalValue > 0 ? `$${totalValue.toFixed(2)} total` : 'add prices to track'}
-          colorClass="bg-lavender-50 dark:bg-lavender-500/10 text-lavender-500"
+          sub={totalValue > 0 ? undefined : 'add prices to track'}
+          gradient="bg-gradient-to-br from-lavender-400 to-purple-400"
+          textColor="text-white"
         />
         {shoppingCost > 0 && (
           <StatCard
-            icon="🛒" value={`$${shoppingCost.toFixed(0)}`} label="Shop Est."
-            sub={`to restock ${lowStockItems.filter(i => i.price != null).length} items`}
-            colorClass="bg-mint-50 dark:bg-mint-500/10 text-mint-600"
+            icon="🛒" value={`$${shoppingCost.toFixed(0)}`} label="Restock Est."
+            sub={`${lowStockItems.filter(i => i.price != null).length} priced items`}
+            gradient="bg-gradient-to-br from-mint-400 to-teal-400"
+            textColor="text-white"
           />
         )}
       </div>
@@ -166,22 +176,28 @@ export default function Dashboard({ items, categories, lowStockItems, expiringIt
       {/* Category breakdown */}
       {catBreakdown.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-4 mb-4">
-          <h3 className="font-sans font-bold text-sm text-gray-700 dark:text-gray-200 mb-4">By Category</h3>
+          <h3 className="font-sans font-bold text-sm text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+            <span className="w-1 h-4 rounded-full bg-gradient-to-b from-blush-300 to-lavender-400 inline-block" />
+            By Category
+          </h3>
           <div className="space-y-3">
             {catBreakdown.map(cat => (
               <div key={cat.id}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-sans text-sm font-semibold text-gray-600 dark:text-gray-300">
-                    {cat.emoji} {cat.name}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-base leading-none">{cat.emoji}</span>
+                    <span className="font-sans text-sm font-semibold text-gray-600 dark:text-gray-300">{cat.name}</span>
+                  </div>
                   <div className="flex items-center gap-2">
                     {cat.low > 0 && (
-                      <span className="font-sans text-xs font-bold text-peach-500">{cat.low} low</span>
+                      <span className="font-sans text-[10px] font-bold text-white bg-peach-400 px-1.5 py-0.5 rounded-full">
+                        {cat.low} low
+                      </span>
                     )}
-                    <span className="font-sans text-xs text-gray-400 dark:text-gray-500 w-5 text-right">{cat.count}</span>
+                    <span className="font-sans text-xs font-bold text-gray-500 dark:text-gray-400 w-6 text-right">{cat.count}</span>
                   </div>
                 </div>
-                <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
@@ -199,31 +215,36 @@ export default function Dashboard({ items, categories, lowStockItems, expiringIt
       {/* Recently updated */}
       {recentItems.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-4">
-          <h3 className="font-sans font-bold text-sm text-gray-700 dark:text-gray-200 mb-3">Recently Updated</h3>
-          <div className="divide-y divide-gray-50 dark:divide-gray-700/60">
+          <h3 className="font-sans font-bold text-sm text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
+            <span className="w-1 h-4 rounded-full bg-gradient-to-b from-mint-300 to-lavender-400 inline-block" />
+            Recently Updated
+          </h3>
+          <div className="space-y-1">
             {recentItems.map(item => {
-              const cat = categories.find(c => c.id === item.categoryId)
+              const cat  = categories.find(c => c.id === item.categoryId)
               const isLow = item.qty <= item.restockQty && item.restockQty > 0
+              const accentColor = cat?.color ?? '#c4b5fd'
               return (
-                <div key={item.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
-                  <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 dark:bg-gray-700 flex items-center justify-center text-lg">
+                <div key={item.id} className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all">
+                  <div
+                    className="w-9 h-9 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center text-lg"
+                    style={{ background: `${accentColor}18` }}
+                  >
                     {item.image
                       ? <img src={item.image} alt="" className="w-full h-full object-cover" loading="lazy" />
                       : cat?.emoji ?? '📦'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-sans font-semibold text-sm text-gray-700 dark:text-gray-100 truncate">{item.name}</p>
-                    <p className="font-sans text-xs text-gray-400 truncate">
+                    <p className="font-sans text-[11px] text-gray-400 truncate">
                       {item.updatedBy ? `${item.updatedBy} · ` : ''}{timeAgo(item.updatedAt ?? item.createdAt)}
                     </p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className={`font-sans font-bold text-sm ${isLow ? 'text-peach-500' : 'text-mint-500'}`}>
-                      {item.qty} {item.unit || 'pcs'}
+                    <p className={`font-sans font-bold text-sm ${isLow ? 'text-peach-500' : 'text-gray-600 dark:text-gray-300'}`}>
+                      {item.qty} <span className="font-normal text-xs text-gray-400">{item.unit || 'pcs'}</span>
                     </p>
-                    {item.price != null && (
-                      <p className="font-sans text-[10px] text-gray-400">${Number(item.price).toFixed(2)}</p>
-                    )}
+                    {isLow && <p className="font-sans text-[10px] text-peach-400 font-semibold">low stock</p>}
                   </div>
                 </div>
               )

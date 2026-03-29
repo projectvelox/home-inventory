@@ -1196,6 +1196,7 @@ function TemplatesTab({ templates, helperProfiles, tasks, onCreateTemplate, onUp
 // ─── Manager: History Tab ─────────────────────────────────────
 function HistoryTab({ tasks, helperProfiles }) {
   const [detailTask, setDetailTask] = useState(null)
+  const [photoFilter, setPhotoFilter] = useState(false) // show only tasks with photos
   const today = localToday()
 
   const assigneeMap = useMemo(() => {
@@ -1204,44 +1205,83 @@ function HistoryTab({ tasks, helperProfiles }) {
     return m
   }, [helperProfiles])
 
-  const pastTasks = useMemo(() => {
+  // Include today's COMPLETED tasks so photos show up immediately (not just past days)
+  const historyTasks = useMemo(() => {
     return tasks
-      .filter(t => t.dueDate < today)
-      .sort((a, b) => b.dueDate.localeCompare(a.dueDate))
+      .filter(t => t.dueDate < today || (t.dueDate === today && t.status === 'done'))
+      .sort((a, b) => b.dueDate.localeCompare(a.dueDate) || (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))
   }, [tasks, today])
+
+  const photoCount = useMemo(() => historyTasks.filter(t => t.completedPhoto).length, [historyTasks])
+
+  const displayTasks = photoFilter ? historyTasks.filter(t => t.completedPhoto) : historyTasks
 
   // Group by date
   const grouped = useMemo(() => {
     const map = new Map()
-    for (const t of pastTasks) {
-      if (!map.has(t.dueDate)) map.set(t.dueDate, [])
-      map.get(t.dueDate).push(t)
+    for (const t of displayTasks) {
+      const key = t.dueDate === today ? 'today' : t.dueDate
+      if (!map.has(key)) map.set(key, [])
+      map.get(key).push(t)
     }
     return [...map.entries()]
-  }, [pastTasks])
+  }, [displayTasks, today])
 
-  if (grouped.length === 0) {
+  if (historyTasks.length === 0) {
     return (
       <div className="flex flex-col items-center py-12 text-center">
         <div className="text-5xl mb-3">🕰️</div>
         <p className="font-sans font-semibold text-gray-500 dark:text-gray-400">No task history yet</p>
-        <p className="font-sans text-sm text-gray-400 mt-1">Past tasks will appear here</p>
+        <p className="font-sans text-sm text-gray-400 mt-1">Completed tasks will appear here</p>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
+      {/* Filter bar */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setPhotoFilter(false)}
+          className={`px-3 py-1.5 rounded-xl font-sans text-xs font-bold transition-all ${!photoFilter ? 'bg-blush-400 text-white shadow-sm' : 'bg-white dark:bg-gray-700 text-gray-500 shadow-sm'}`}
+        >All</button>
+        <button
+          onClick={() => setPhotoFilter(true)}
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-xl font-sans text-xs font-bold transition-all ${photoFilter ? 'bg-blush-400 text-white shadow-sm' : 'bg-white dark:bg-gray-700 text-gray-500 shadow-sm'}`}
+        >
+          📷 With Photos
+          {photoCount > 0 && <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${photoFilter ? 'bg-white/30 text-white' : 'bg-blush-50 text-blush-400'}`}>{photoCount}</span>}
+        </button>
+      </div>
+
+      {grouped.length === 0 && (
+        <div className="flex flex-col items-center py-10 text-center">
+          <p className="text-3xl mb-2">📷</p>
+          <p className="font-sans text-sm text-gray-400">No tasks with photos yet</p>
+        </div>
+      )}
+
       {grouped.map(([date, dayTasks]) => {
+        const isToday = date === 'today'
         const done    = dayTasks.filter(t => t.status === 'done').length
         const missed  = dayTasks.length - done
-        const display = new Date(date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+        const display = isToday
+          ? 'Today'
+          : new Date(date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+        const withPhotos = dayTasks.filter(t => t.completedPhoto).length
         return (
           <div key={date}>
             <div className="flex items-center justify-between mb-2 px-1">
-              <p className="font-sans text-xs font-bold text-gray-500 dark:text-gray-400">{display}</p>
+              <div className="flex items-center gap-2">
+                <p className={`font-sans text-xs font-bold ${isToday ? 'text-blush-400' : 'text-gray-500 dark:text-gray-400'}`}>{display}</p>
+                {withPhotos > 0 && (
+                  <span className="font-sans text-[10px] font-semibold text-blush-400 bg-blush-50 dark:bg-blush-500/10 px-1.5 py-0.5 rounded-full">
+                    📷 {withPhotos}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-1.5">
-                {missed > 0 && (
+                {missed > 0 && !photoFilter && (
                   <span className="font-sans text-[10px] font-bold px-1.5 py-0.5 rounded-full text-red-400 bg-red-50 dark:bg-red-500/10">
                     {missed} missed
                   </span>
@@ -1256,30 +1296,42 @@ function HistoryTab({ tasks, helperProfiles }) {
                 <div
                   key={task.id}
                   onClick={() => setDetailTask(task)}
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-card px-3.5 py-3 flex items-center gap-3 cursor-pointer hover:shadow-card-md transition-all"
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden cursor-pointer hover:shadow-card-md transition-all"
                 >
-                  <span className="text-base flex-shrink-0">{task.status === 'done' ? '✅' : '⬜'}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-sans font-semibold text-sm text-gray-700 dark:text-gray-100 leading-snug ${task.status === 'done' ? 'line-through opacity-60' : 'text-red-500 dark:text-red-400'}`}>{task.title}</p>
-                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                      {task.assignedTo && assigneeMap[task.assignedTo] && (
-                        <span className="font-sans text-[10px] font-semibold text-lavender-500 bg-lavender-50 dark:bg-lavender-500/10 px-1.5 py-0.5 rounded-full">
-                          {assigneeMap[task.assignedTo]}
-                        </span>
-                      )}
-                      {task.completedAt && (
-                        <span className="font-sans text-[10px] text-mint-500">
-                          ✓ {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      )}
-                      {task.status !== 'done' && (
-                        <span className="font-sans text-[10px] text-red-400 font-semibold">Not completed</span>
-                      )}
-                    </div>
-                  </div>
+                  {/* Full-width photo banner when there's a photo */}
                   {task.completedPhoto && (
-                    <img src={task.completedPhoto} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                    <div className="relative w-full">
+                      <img src={task.completedPhoto} alt="completion proof" className="w-full max-h-40 object-cover" />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-2">
+                        <span className="font-sans text-[10px] font-bold text-white">📷 Proof photo</span>
+                      </div>
+                    </div>
                   )}
+                  <div className="px-3.5 py-3 flex items-center gap-3">
+                    <span className="text-base flex-shrink-0">{task.status === 'done' ? '✅' : '⬜'}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-sans font-semibold text-sm leading-snug ${task.status === 'done' ? 'text-gray-600 dark:text-gray-300' : 'text-red-500 dark:text-red-400'}`}>{task.title}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        {task.assignedTo && assigneeMap[task.assignedTo] && (
+                          <span className="font-sans text-[10px] font-semibold text-lavender-500 bg-lavender-50 dark:bg-lavender-500/10 px-1.5 py-0.5 rounded-full">
+                            {assigneeMap[task.assignedTo]}
+                          </span>
+                        )}
+                        {task.completedAt && (
+                          <span className="font-sans text-[10px] text-mint-500 font-medium">
+                            ✓ {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                        {task.status !== 'done' && (
+                          <span className="font-sans text-[10px] text-red-400 font-semibold">Not completed</span>
+                        )}
+                        {task.completionNotes && (
+                          <span className="font-sans text-[10px] text-gray-400 truncate max-w-[120px]">💬 {task.completionNotes}</span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="font-sans text-xs text-gray-300 flex-shrink-0">›</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1336,10 +1388,11 @@ export default function TasksPage({ user, showToast }) {
   const futureAll  = tasks.filter(t => t.dueDate > today).length
   const overdueAll = tasks.filter(t => t.dueDate < today && t.status === 'pending').length
 
+  const photoProofCount = tasks.filter(t => t.status === 'done' && t.completedPhoto).length
   const TABS = [
     { id: 'schedule',  label: 'Schedule', badge: overdueAll > 0 ? `${todayDone}/${todayAll} · ${overdueAll}⚠` : todayAll > 0 ? `${todayDone}/${todayAll}` : null },
     { id: 'templates', label: 'Templates', badge: templates.length > 0 ? `${templates.length}` : null },
-    { id: 'history',   label: 'History',   badge: null },
+    { id: 'history',   label: 'History',   badge: photoProofCount > 0 ? `📷 ${photoProofCount}` : null },
   ]
 
   return (

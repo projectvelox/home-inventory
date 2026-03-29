@@ -1,0 +1,17 @@
+{
+  "name": "My Home Haven",
+  "short_name": "Home Haven",
+  "description": "Keep track of your home inventory",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdf2f8",
+  "theme_color": "#f9a8d4",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

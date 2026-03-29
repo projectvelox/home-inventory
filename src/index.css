@@ -64,3 +64,14 @@ input[type=number] { -moz-appearance: textfield; }
 
 ::selection { background: #fecdd9; color: #be185d; }
 .dark ::selection { background: #374151; color: #f9fafb; }
+
+/* ── Skeleton shimmer ────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e9ecef 50%, #f3f4f6 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+.dark .skeleton {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 800px 100%;
+}

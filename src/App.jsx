@@ -39,11 +39,36 @@ export default function App() {
   return <InventoryApp user={user} onLogout={logout} />
 }
 
-// ─── Inline view spinner (Suspense fallback for lazy views) ──
-function ViewSpinner() {
+// ─── Skeleton card (shimmer placeholder) ─────────────────────
+function SkeletonCard() {
   return (
-    <div className="flex-1 flex items-center justify-center py-20">
-      <div className="w-8 h-8 border-4 border-blush-100 border-t-blush-400 rounded-full animate-spin" />
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden">
+      <div className="h-1 skeleton" />
+      <div className="p-3 space-y-2.5">
+        <div className="flex items-start gap-2.5">
+          <div className="w-11 h-11 rounded-xl skeleton flex-shrink-0" />
+          <div className="flex-1 space-y-2 pt-1">
+            <div className="h-3.5 rounded-lg skeleton w-3/4" />
+            <div className="h-2.5 rounded-lg skeleton w-1/2" />
+          </div>
+        </div>
+        <div className="pt-2 border-t border-gray-50 dark:border-gray-700/60 flex items-center justify-between">
+          <div className="flex gap-1.5">
+            <div className="w-8 h-8 rounded-full skeleton" />
+            <div className="w-8 h-8 rounded-lg skeleton" />
+            <div className="w-8 h-8 rounded-full skeleton" />
+          </div>
+          <div className="h-2.5 rounded-lg skeleton w-10" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ViewSkeleton() {
+  return (
+    <div className="px-4 pt-4 pb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 animate-pulse-soft">
+      {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
     </div>
   )
 }
@@ -51,10 +76,24 @@ function ViewSpinner() {
 // ─── Splash ──────────────────────────────────────────────────
 function SplashScreen() {
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-[#fafaf9] dark:bg-gray-900">
-      <div className="text-6xl mb-4 animate-bounce-soft">🏠</div>
-      <h1 className="font-title text-3xl text-blush-400">My Home Haven</h1>
-      <div className="mt-6 w-7 h-7 border-[3px] border-blush-200 border-t-blush-400 rounded-full animate-spin" />
+    <div
+      className="min-h-[100dvh] flex flex-col items-center justify-center"
+      style={{ background: 'linear-gradient(160deg, #fdf2f8 0%, #f3e8ff 50%, #f0fdf4 100%)' }}
+    >
+      <div className="w-24 h-24 rounded-3xl bg-white shadow-modal flex items-center justify-center text-5xl mb-5 animate-bounce-soft">
+        🏠
+      </div>
+      <h1 className="font-title text-3xl text-blush-400 mb-1">My Home Haven</h1>
+      <p className="font-sans text-sm text-gray-400 mb-8">Loading your home…</p>
+      <div className="flex gap-1.5">
+        {[0, 1, 2].map(i => (
+          <div
+            key={i}
+            className="w-2 h-2 rounded-full bg-blush-300"
+            style={{ animation: `pulse-soft 1.2s ease-in-out ${i * 0.2}s infinite` }}
+          />
+        ))}
+      </div>
     </div>
   )
 }
@@ -639,7 +678,7 @@ function InventoryApp({ user, onLogout }) {
 
         {/* ── Dashboard ─── */}
         {view === 'dashboard' && (
-          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="w-8 h-8 border-4 border-blush-100 border-t-blush-400 rounded-full animate-spin" /></div>}>
+          <Suspense fallback={<ViewSkeleton />}>
             <Dashboard
               items={items}
               categories={categories}
@@ -665,14 +704,14 @@ function InventoryApp({ user, onLogout }) {
 
         {/* ── Expiry Calendar ─── */}
         {view === 'expiry' && (
-          <Suspense fallback={<ViewSpinner />}>
+          <Suspense fallback={<ViewSkeleton />}>
             <ExpiryCalendar items={items} categories={categories} />
           </Suspense>
         )}
 
         {/* ── Wishlist ─── */}
         {view === 'wishlist' && (
-          <Suspense fallback={<ViewSpinner />}>
+          <Suspense fallback={<ViewSkeleton />}>
             <WishlistPage
               items={wishlist.items}
               categories={categories}
@@ -687,14 +726,14 @@ function InventoryApp({ user, onLogout }) {
 
         {/* ── Tasks ─── */}
         {view === 'tasks' && (
-          <Suspense fallback={<ViewSpinner />}>
+          <Suspense fallback={<ViewSkeleton />}>
             <TasksPage user={user} showToast={showToast} />
           </Suspense>
         )}
 
         {/* ── Help ─── */}
         {view === 'help' && (
-          <Suspense fallback={<ViewSpinner />}>
+          <Suspense fallback={<ViewSkeleton />}>
             <HelpPage />
           </Suspense>
         )}

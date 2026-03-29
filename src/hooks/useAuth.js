@@ -81,14 +81,17 @@ export function useAuth() {
   }, [])
 
   async function login(email, password) {
+    // Trim whitespace/newlines — env vars can carry trailing \n which causes invalid_credentials
+    const cleanEmail = (email ?? '').trim()
+    const cleanPassword = (password ?? '').trim()
     // Race the login request against a 15-second timeout so it never hangs indefinitely
-    const loginPromise = supabase.auth.signInWithPassword({ email, password })
+    const loginPromise = supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword })
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Login timed out — check your connection and try again.')), 15000)
     )
     try {
       const { data, error } = await Promise.race([loginPromise, timeoutPromise])
-      if (error) return error.message
+      if (error) return error.message ?? 'Login failed'
       // Eagerly fetch + set profile so the UI transitions immediately
       // (don't wait for onAuthStateChange which fires slightly later)
       if (data?.user) {

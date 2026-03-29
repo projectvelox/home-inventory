@@ -126,10 +126,10 @@ export default function ShoppingList({ items, categories, locations = [], onUpda
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-8 text-center animate-fade-in">
-        <div className="text-6xl mb-4">✅</div>
+      <div className="flex flex-col items-center justify-center py-20 px-8 text-center animate-fade-in">
+        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-mint-100 to-lavender-100 dark:from-mint-500/10 dark:to-lavender-500/10 flex items-center justify-center text-5xl mb-5">✅</div>
         <h2 className="font-title text-2xl text-mint-400 mb-2">All stocked up!</h2>
-        <p className="font-sans text-gray-400 text-sm dark:text-gray-500">No items need restocking right now.</p>
+        <p className="font-sans text-gray-400 text-sm dark:text-gray-500 max-w-xs">Everything is at the right level. Check back when stock runs low.</p>
       </div>
     )
   }
@@ -232,90 +232,96 @@ export default function ShoppingList({ items, categories, locations = [], onUpda
 
             <div className="space-y-2">
               {groupItems.map(item => {
-                const cat = categories.find(c => c.id === item.categoryId)
+                const cat     = categories.find(c => c.id === item.categoryId)
                 const isEmpty = item.qty === 0
                 const isChecked = checked.has(item.id)
+                const accentColor = cat?.color ?? '#c4b5fd'
                 return (
                   <div
                     key={item.id}
-                    className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-3 flex items-center gap-3 transition-all ${
-                      isChecked
-                        ? 'opacity-50 ring-2 ring-mint-300'
-                        : isEmpty ? 'ring-2 ring-red-200' : 'ring-2 ring-peach-200'
+                    className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden transition-all ${
+                      isChecked ? 'opacity-50' : ''
                     }`}
                   >
-                    {/* Shopping mode checkbox */}
-                    {shoppingMode && (
-                      <button
-                        onClick={() => toggleCheck(item.id)}
-                        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                          isChecked
-                            ? 'bg-mint-400 border-mint-400 text-white'
-                            : 'border-gray-300 dark:border-gray-500'
-                        }`}
-                      >
-                        {isChecked && <span className="text-xs font-bold">✓</span>}
-                      </button>
-                    )}
+                    {/* Category accent bar */}
+                    <div className="h-0.5 w-full" style={{ background: accentColor }} />
 
-                    {/* Thumbnail */}
-                    <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-blush-50 to-lavender-50 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center">
-                      {item.image
-                        ? <img src={item.image} alt="" className="w-full h-full object-cover" />
-                        : <span className="text-2xl">{cat?.emoji ?? '📦'}</span>}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 className={`font-sans font-bold text-gray-700 dark:text-gray-200 text-sm truncate ${isChecked ? 'line-through' : ''}`}>{item.name}</h3>
-                        <span className={`text-xs font-sans font-bold px-1.5 py-0.5 rounded-full text-white flex-shrink-0 ${isEmpty ? 'bg-red-400' : 'bg-peach-400'}`}>
-                          {isEmpty ? 'Empty!' : 'Low!'}
-                        </span>
-                      </div>
-                      {getLocationName(item) && (
-                        <p className="text-xs font-sans text-gray-400 mt-0.5">📍 {getLocationName(item)}</p>
-                      )}
-                      <p className="text-xs font-sans text-gray-500 dark:text-gray-400 mt-0.5">
-                        Has: {item.qty} {item.unit || 'pcs'} · Restock at: {item.restockQty}
-                        {item.price != null && ` · $${Number(item.price).toFixed(2)}`}
-                      </p>
-                      {/* Per-item qty input when checked in shopping mode */}
-                      {shoppingMode && isChecked && (
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          <span className="text-[11px] font-sans text-gray-400">Bought:</span>
-                          <input
-                            type="number"
-                            min="0"
-                            value={buyQtys[item.id] ?? (item.fullQty > 0 ? item.fullQty : item.restockQty + 1)}
-                            onChange={e => setBuyQtys(prev => ({ ...prev, [item.id]: e.target.value }))}
-                            onClick={e => e.stopPropagation()}
-                            className="w-14 text-center font-sans font-bold text-xs border-2 border-mint-200 dark:border-mint-500/40 rounded-lg py-0.5 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-mint-400"
-                          />
-                          <span className="text-[11px] font-sans text-gray-400">{item.unit || 'pcs'}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action */}
-                    {!shoppingMode && (
-                      item.fullQty > 0 ? (
+                    <div className="p-3 flex items-center gap-3">
+                      {/* Shopping mode checkbox */}
+                      {shoppingMode && (
                         <button
-                          onClick={() => onUpdateQty(item.id, item.fullQty)}
-                          className="flex-shrink-0 px-3 py-2 rounded-xl bg-mint-50 dark:bg-mint-500/10 border-2 border-mint-300 dark:border-mint-500/30 text-mint-500 text-xs font-sans font-bold hover:bg-mint-100 active:scale-95 transition-all text-center leading-tight"
+                          onClick={() => toggleCheck(item.id)}
+                          className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all active:scale-90 ${
+                            isChecked
+                              ? 'bg-mint-400 border-mint-400 text-white'
+                              : 'border-gray-300 dark:border-gray-500 hover:border-mint-300'
+                          }`}
                         >
-                          ↺ Full<br /><span className="text-gray-400">({item.fullQty})</span>
+                          {isChecked && <span className="text-xs font-bold">✓</span>}
                         </button>
-                      ) : (
-                        <div className="flex-shrink-0 flex flex-col items-center gap-1">
-                          <button
-                            onClick={() => onUpdateQty(item.id, item.qty + 1)}
-                            className="w-10 h-10 rounded-full bg-mint-100 dark:bg-mint-500/20 text-mint-500 font-bold text-lg flex items-center justify-center hover:bg-mint-200 active:scale-95 transition-all"
-                          >+</button>
-                          <span className="text-xs font-sans text-gray-500 dark:text-gray-400">{item.qty}</span>
+                      )}
+
+                      {/* Emoji bubble */}
+                      <div
+                        className="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center text-xl"
+                        style={{ background: `${accentColor}18` }}
+                      >
+                        {item.image
+                          ? <img src={item.image} alt="" className="w-full h-full object-cover" />
+                          : cat?.emoji ?? '📦'}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h3 className={`font-sans font-bold text-gray-700 dark:text-gray-200 text-sm truncate ${isChecked ? 'line-through text-gray-400' : ''}`}>{item.name}</h3>
+                          <span className={`text-[10px] font-sans font-bold px-1.5 py-0.5 rounded-full text-white flex-shrink-0 ${isEmpty ? 'bg-red-400' : 'bg-peach-400'}`}>
+                            {isEmpty ? 'Empty' : 'Low'}
+                          </span>
                         </div>
-                      )
-                    )}
+                        <p className="text-[11px] font-sans text-gray-400 mt-0.5">
+                          {item.qty} {item.unit || 'pcs'} left
+                          {item.restockQty ? ` · restock at ${item.restockQty}` : ''}
+                          {item.price != null ? ` · $${Number(item.price).toFixed(2)}` : ''}
+                        </p>
+                        {getLocationName(item) && (
+                          <p className="text-[11px] font-sans text-gray-400 mt-0.5 truncate">📍 {getLocationName(item)}</p>
+                        )}
+                        {shoppingMode && isChecked && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className="text-[11px] font-sans text-gray-400">Bought:</span>
+                            <input
+                              type="number" min="0"
+                              value={buyQtys[item.id] ?? (item.fullQty > 0 ? item.fullQty : item.restockQty + 1)}
+                              onChange={e => setBuyQtys(prev => ({ ...prev, [item.id]: e.target.value }))}
+                              onClick={e => e.stopPropagation()}
+                              className="w-14 text-center font-sans font-bold text-xs border-2 border-mint-200 dark:border-mint-500/40 rounded-lg py-0.5 bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-mint-400"
+                            />
+                            <span className="text-[11px] font-sans text-gray-400">{item.unit || 'pcs'}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action */}
+                      {!shoppingMode && (
+                        item.fullQty > 0 ? (
+                          <button
+                            onClick={() => onUpdateQty(item.id, item.fullQty)}
+                            className="flex-shrink-0 px-2.5 py-2 rounded-xl bg-mint-50 dark:bg-mint-500/10 border border-mint-200 dark:border-mint-500/30 text-mint-500 text-xs font-sans font-bold hover:bg-mint-100 active:scale-95 transition-all text-center leading-tight"
+                          >
+                            ↺ Full<br /><span className="text-gray-400 font-normal text-[10px]">({item.fullQty})</span>
+                          </button>
+                        ) : (
+                          <div className="flex-shrink-0 flex flex-col items-center gap-0.5">
+                            <button
+                              onClick={() => onUpdateQty(item.id, item.qty + 1)}
+                              className="w-9 h-9 rounded-full bg-mint-100 dark:bg-mint-500/20 text-mint-600 font-bold text-lg flex items-center justify-center hover:bg-mint-200 active:scale-90 transition-all"
+                            >+</button>
+                            <span className="text-[10px] font-sans text-gray-400">{item.qty}</span>
+                          </div>
+                        )
+                      )}
+                    </div>
                   </div>
                 )
               })}

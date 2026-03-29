@@ -1,20 +1,18 @@
-// Static login credentials
-// Change the passwords below to whatever you prefer
-// Tip: set VITE_WIFE_PASSWORD and VITE_LEA_PASSWORD in Vercel env vars
-// to avoid having passwords visible in the GitHub repo
-
+// Display config for the "Who's home?" login screen
+// Emails are set via VITE_WIFE_EMAIL / VITE_LEA_EMAIL env vars
+// (set in .env locally and in Vercel dashboard for production)
 export const USERS = [
   {
-    username: 'wife',
+    id: 'wife',
     displayName: 'My Love',
-    password: import.meta.env.VITE_WIFE_PASSWORD || 'haven2024',
+    email: import.meta.env.VITE_WIFE_EMAIL,
     role: 'admin',
     avatar: '👩',
   },
   {
-    username: 'atea',
+    id: 'atea',
     displayName: 'Ate Lea',
-    password: import.meta.env.VITE_LEA_PASSWORD || 'restock2024',
+    email: import.meta.env.VITE_LEA_EMAIL,
     role: 'helper',
     avatar: '🧹',
   },

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import Header from './components/Header'
 import CategoryBar from './components/CategoryBar'
 import ItemCard from './components/ItemCard'
@@ -11,30 +11,53 @@ import { useInventory } from './hooks/useInventory'
 import { usePWAInstall } from './hooks/usePWAInstall'
 import { useAuth } from './hooks/useAuth'
 
+// ─── Root: handles auth gate ────────────────────────────────
 export default function App() {
-  const { user, login, logout } = useAuth()
-  const { items, categories, lowStockItems, addItem, updateItem, deleteItem, addCategory } = useInventory()
+  const { user, loading, login, logout } = useAuth()
+
+  if (loading) return <SplashScreen />
+  if (!user)   return <LoginScreen onLogin={login} />
+  return <InventoryApp user={user} onLogout={logout} />
+}
+
+// ─── Splash shown while session is being restored ───────────
+function SplashScreen() {
+  return (
+    <div
+      className="min-h-[100dvh] flex flex-col items-center justify-center"
+      style={{ background: 'linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 50%, #f0fdf4 100%)' }}
+    >
+      <div className="text-6xl mb-4 animate-bounce-soft">🏠</div>
+      <h1 className="font-title text-3xl text-blush-400">My Home Haven</h1>
+      <div className="mt-5 w-8 h-8 border-4 border-blush-200 border-t-blush-400 rounded-full animate-spin" />
+    </div>
+  )
+}
+
+// ─── Main app (only renders when authenticated) ──────────────
+function InventoryApp({ user, onLogout }) {
+  const {
+    items, categories, lowStockItems, loading,
+    addItem, updateItem, deleteItem, addCategory,
+  } = useInventory()
   const { canInstall, install, dismiss } = usePWAInstall()
 
   const isAdmin = user?.role === 'admin'
   const permissions = {
-    canAdd: isAdmin,
-    canEdit: isAdmin,
-    canDelete: isAdmin,
+    canAdd:              isAdmin,
+    canEdit:             isAdmin,
+    canDelete:           isAdmin,
     canManageCategories: isAdmin,
-    canUpdateQty: true,
+    canUpdateQty:        true,
   }
 
-  const [view, setView] = useState('inventory')
+  const [view,             setView]             = useState('inventory')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [editingItem, setEditingItem] = useState(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showCategoryModal, setShowCategoryModal] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [sortBy, setSortBy] = useState('low-stock')
-
-  // Show login if not authenticated
-  if (!user) return <LoginScreen onLogin={login} />
+  const [editingItem,      setEditingItem]      = useState(null)
+  const [showAddModal,     setShowAddModal]     = useState(false)
+  const [showCategoryModal,setShowCategoryModal]= useState(false)
+  const [searchQuery,      setSearchQuery]      = useState('')
+  const [sortBy,           setSortBy]           = useState('low-stock')
 
   const filteredItems = (() => {
     let result = selectedCategory === 'all'
@@ -88,9 +111,11 @@ export default function App() {
     return categories.find(c => c.id === id)
   }
 
+  if (loading) return <SplashScreen />
+
   return (
     <div className="min-h-[100dvh] pb-[max(96px,calc(96px+env(safe-area-inset-bottom,0px)))]">
-      <Header lowStockCount={lowStockItems.length} user={user} onLogout={logout} />
+      <Header lowStockCount={lowStockItems.length} user={user} onLogout={onLogout} />
 
       {/* PWA install banner */}
       {canInstall && (
@@ -101,12 +126,8 @@ export default function App() {
               <p className="font-cute font-bold text-sm text-lavender-500">Add to home screen!</p>
               <p className="font-cute text-xs text-gray-400">Quick access without opening the browser</p>
             </div>
-            <button onClick={install} className="flex-shrink-0 px-3 py-1.5 rounded-xl font-cute font-bold text-xs text-white bg-lavender-400 hover:bg-lavender-500 transition-all">
-              Install
-            </button>
-            <button onClick={dismiss} aria-label="Dismiss install banner" className="flex-shrink-0 w-7 h-7 rounded-full bg-white/70 flex items-center justify-center text-gray-400 hover:bg-white text-xs">
-              ✕
-            </button>
+            <button onClick={install} className="flex-shrink-0 px-3 py-1.5 rounded-xl font-cute font-bold text-xs text-white bg-lavender-400 hover:bg-lavender-500 transition-all">Install</button>
+            <button onClick={dismiss} aria-label="Dismiss" className="flex-shrink-0 w-7 h-7 rounded-full bg-white/70 flex items-center justify-center text-gray-400 hover:bg-white text-xs">✕</button>
           </div>
         </div>
       )}
@@ -136,7 +157,7 @@ export default function App() {
 
       {view === 'inventory' && (
         <>
-          {/* Search bar */}
+          {/* Search */}
           <div className="max-w-2xl mx-auto px-4 pt-3">
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none">🔍</span>
@@ -148,9 +169,7 @@ export default function App() {
                 className="w-full pl-9 pr-8 py-3 rounded-2xl border-2 border-white/80 bg-white/70 font-cute text-base focus:outline-none focus:border-lavender-300 focus:bg-white transition-all placeholder-gray-300"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
-                  ✕
-                </button>
+                <button onClick={() => setSearchQuery('')} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">✕</button>
               )}
             </div>
           </div>
@@ -176,8 +195,8 @@ export default function App() {
                   <div className="flex items-center gap-1">
                     {[
                       { key: 'low-stock', label: '⚠️', title: 'Low stock first' },
-                      { key: 'a-z', label: 'A–Z', title: 'Alphabetical' },
-                      { key: 'recent', label: '🕐', title: 'Recently updated' },
+                      { key: 'a-z',       label: 'A–Z', title: 'Alphabetical' },
+                      { key: 'recent',    label: '🕐',  title: 'Recently updated' },
                     ].map(({ key, label, title }) => (
                       <button
                         key={key}
@@ -239,7 +258,6 @@ export default function App() {
         </button>
       )}
 
-      {/* Modals */}
       {(showAddModal || editingItem) && permissions.canEdit && (
         <ItemModal
           item={editingItem}

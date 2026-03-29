@@ -4,7 +4,8 @@ import { USERS } from '../config/users'
 export default function LoginScreen({ onLogin }) {
   const [selectedUser, setSelectedUser] = useState(null)
   const [password, setPassword] = useState('')
-  const [error, setError] = useState(false)
+  const [error, setError] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
   const inputRef = useRef()
 
   useEffect(() => {
@@ -22,14 +23,20 @@ export default function LoginScreen({ onLogin }) {
   function handleBack() {
     setSelectedUser(null)
     setPassword('')
-    setError(false)
+    setError(null)
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    const ok = onLogin(selectedUser.username, password)
-    if (!ok) {
-      setError(true)
+    if (!selectedUser.email) {
+      setError('Account not configured yet. Please contact the admin.')
+      return
+    }
+    setSubmitting(true)
+    const errorMsg = await onLogin(selectedUser.email, password)
+    setSubmitting(false)
+    if (errorMsg) {
+      setError('Wrong password, try again 🙈')
       setPassword('')
     }
   }
@@ -94,9 +101,10 @@ export default function LoginScreen({ onLogin }) {
                   ref={inputRef}
                   type="password"
                   value={password}
-                  onChange={e => { setPassword(e.target.value); setError(false) }}
+                  onChange={e => { setPassword(e.target.value); setError(null) }}
                   placeholder="Enter your password..."
                   autoComplete="current-password"
+                  disabled={submitting}
                   className={`w-full rounded-2xl border-2 px-4 py-3 font-cute focus:outline-none transition-colors ${
                     error
                       ? 'border-red-300 bg-red-50 focus:border-red-400'
@@ -104,14 +112,18 @@ export default function LoginScreen({ onLogin }) {
                   }`}
                 />
                 {error && (
-                  <p className="font-cute text-xs text-red-400 mt-1.5">Wrong password, try again 🙈</p>
+                  <p className="font-cute text-xs text-red-400 mt-1.5">{error}</p>
                 )}
               </div>
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-2xl font-cute font-bold text-white text-base shadow-md bg-gradient-to-r from-blush-300 to-lavender-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+                disabled={submitting}
+                className="w-full py-3.5 rounded-2xl font-cute font-bold text-white text-base shadow-md bg-gradient-to-r from-blush-300 to-lavender-400 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:scale-100 flex items-center justify-center gap-2"
               >
-                Let me in! 🏠
+                {submitting
+                  ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Checking...</>
+                  : 'Let me in! 🏠'
+                }
               </button>
             </form>
           </div>

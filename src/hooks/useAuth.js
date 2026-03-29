@@ -1,34 +1,38 @@
-import { useState } from 'react'
-import { USERS } from '../config/users'
-
-const SESSION_KEY = 'home-haven-session'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 export function useAuth() {
-  const [user, setUser] = useState(() => {
-    try {
-      const s = localStorage.getItem(SESSION_KEY)
-      return s ? JSON.parse(s) : null
-    } catch { return null }
-  })
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  function login(username, password) {
-    const found = USERS.find(u => u.username === username && u.password === password)
-    if (!found) return false
-    const session = {
-      username: found.username,
-      displayName: found.displayName,
-      role: found.role,
-      avatar: found.avatar,
-    }
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session))
-    setUser(session)
-    return true
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          setUser(profile ?? null)
+        } else {
+          setUser(null)
+        }
+        setLoading(false)
+      }
+    )
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Returns null on success, error message string on failure
+  async function login(email, password) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    return error?.message ?? null
   }
 
-  function logout() {
-    localStorage.removeItem(SESSION_KEY)
-    setUser(null)
+  async function logout() {
+    await supabase.auth.signOut()
   }
 
-  return { user, login, logout }
+  return { user, loading, login, logout }
 }

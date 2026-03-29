@@ -574,7 +574,7 @@ function InventoryApp({ user, onLogout }) {
 
         {/* Mobile header */}
         <div className="lg:hidden">
-          <Header lowStockCount={lowStockItems.length} user={user} onLogout={onLogout} dark={dark} onToggleDark={toggleDark} />
+          <Header view={view} lowStockCount={lowStockItems.length} user={user} onLogout={onLogout} dark={dark} onToggleDark={toggleDark} />
         </div>
 
         {/* Desktop page header */}

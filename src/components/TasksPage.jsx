@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useRef, useMemo, useEffect } from 'react'
 import { useTasks } from '../hooks/useTasks'
 import { localToday, compressImage, CATEGORY_META, RECUR_META, TEMPLATE_COLORS, TEMPLATE_EMOJIS } from '../lib/taskUtils'
 
@@ -1082,7 +1082,14 @@ function TemplatesTab({ templates, helperProfiles, tasks, onCreateTemplate, onUp
                 {tmpl.emoji}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-sans font-bold text-sm text-gray-800 dark:text-gray-100">{tmpl.name}</p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <p className="font-sans font-bold text-sm text-gray-800 dark:text-gray-100">{tmpl.name}</p>
+                  {tmpl.recurType && tmpl.recurType !== 'none' && (
+                    <span className="font-sans text-[10px] font-semibold text-sky-500 bg-sky-50 dark:bg-sky-500/10 px-1.5 py-0.5 rounded-full">
+                      🔁 {RECUR_META[tmpl.recurType]?.short ?? tmpl.recurType}
+                    </span>
+                  )}
+                </div>
                 <p className="font-sans text-xs text-gray-400">{tmpl.items.length} task{tmpl.items.length !== 1 ? 's' : ''}</p>
               </div>
               <div className="flex gap-1.5">
@@ -1265,9 +1272,20 @@ export default function TasksPage({ user, showToast }) {
     tasks, templates, helperProfiles, loading,
     createTask, completeTask, reopenTask, deleteTask, updateTask,
     createTemplate, updateTemplate, deleteTemplate, assignTemplate,
+    autoAssignDueTemplates,
   } = useTasks(user?.id, user?.role)
 
   const [activeTab, setActiveTab] = useState('schedule')
+
+  // Auto-assign recurring templates that are due today/this week (admin only, runs once after load)
+  const autoAssignRan = useRef(false)
+  useEffect(() => {
+    if (!loading && isAdmin && templates.length > 0 && !autoAssignRan.current) {
+      autoAssignRan.current = true
+      const firstHelperId = helperProfiles[0]?.id ?? null
+      autoAssignDueTemplates(firstHelperId)
+    }
+  }, [loading, isAdmin, templates.length])
 
   if (loading) {
     return (

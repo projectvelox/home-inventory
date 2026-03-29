@@ -320,9 +320,56 @@ export function useTasks(userId, role) {
     return { alreadyAssigned: false }
   }
 
+  // Auto-assign any recurring templates that are due today/this week but not yet assigned.
+  // Called once after initial load (admin only). Silently creates tasks — no UI needed.
+  async function autoAssignDueTemplates(helperIdFallback) {
+    if (role !== 'admin') return
+    const today = localToday()
+    // Monday of this week (for weekly recurrence)
+    const now   = new Date()
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
+    const weekStart = monday.toISOString().slice(0, 10)
+
+    for (const tmpl of templates) {
+      if (!tmpl.recurType || tmpl.recurType === 'none') continue
+
+      const isDueDaily  = tmpl.recurType === 'daily'
+      const isDueWeekly = tmpl.recurType === 'weekly'
+
+      // Check if already assigned for today (daily) or this week (weekly)
+      const alreadyToday = tasks.some(t => t.templateId === tmpl.id && t.dueDate === today)
+      const alreadyWeek  = tasks.some(t => t.templateId === tmpl.id && t.dueDate >= weekStart && t.dueDate <= today)
+
+      if (isDueDaily  && alreadyToday) continue
+      if (isDueWeekly && alreadyWeek)  continue
+
+      // Find a helper to assign to — use first helper profile or leave unassigned
+      const assignTo = helperIdFallback ?? null
+
+      await supabase.from('tasks').insert(
+        tmpl.items.map((item, idx) => ({
+          title:          item.title,
+          description:    item.description    || null,
+          category:       item.category       || 'other',
+          estimated_mins: item.estimatedMins  || null,
+          sort_order:     idx,
+          assigned_to:    assignTo,
+          created_by:     userId,
+          template_id:    tmpl.id,
+          due_date:       today,
+          status:         'pending',
+          recur_type:     tmpl.recurType,
+        }))
+      )
+    }
+    await loadTasks()
+  }
+
   return {
     tasks, templates, helperProfiles, loading,
     createTask, completeTask, reopenTask, deleteTask, updateTask,
     createTemplate, updateTemplate, deleteTemplate, assignTemplate,
+    autoAssignDueTemplates,
   }
 }

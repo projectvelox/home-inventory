@@ -1,6 +1,6 @@
 ---
 title: "My Home Haven"
-subtitle: "Technical Design Document - v2.4.0"
+subtitle: "Technical Design Document - v2.5.0"
 author: "Development Team"
 date: "29 March 2026"
 ---
@@ -8,7 +8,7 @@ date: "29 March 2026"
 | | |
 |---|---|
 | **Project** | My Home Haven - Household Inventory PWA |
-| **Current Version** | 2.4.0 |
+| **Current Version** | 2.5.0 |
 | **Document Status** | Living Document - updated with every release |
 | **Last Updated** | 29 March 2026 |
 | **Author** | Development Team |
@@ -522,6 +522,7 @@ Created task_templates, task_template_items, and tasks tables with role-scoped R
 
 | Version | Date | Summary |
 |---------|------|---------|
+| 2.5.0 | 2026-03-29 | Recurrence feature end-to-end: recurType picker in CreateTask/CreateTemplate sheets, 🔁 badge on TaskCard and template cards, auto-assign recurring templates on admin load via useEffect guard, useTasks persists recur_type to DB. Filipino household + baby care task templates seeded. |
 | 2.4.0 | 2026-03-29 | Complete TDD rewrite with professional industry-standard formatting. Added 3 embedded architecture diagrams: system overview, database ERD, and application entry flow. Introduced Word export pipeline via pandoc and sharp. |
 | 2.3.0 | 2026-03-29 | Wishlist tab with priority levels and promote-to-inventory. Expiry Calendar view. Shopping List running total and group-by-store. Dashboard estimated shopping cost card. Store field on items. Barcode UPC Item DB fallback. Quick filter chips. Location cards click-to-filter. |
 | 2.2.0 | 2026-03-28 | Dedicated Locations page with sidebar and mobile tab. Location cards with item count badge and photo. Inline add form with back-camera capture. 6-second auth spinner timeout. |

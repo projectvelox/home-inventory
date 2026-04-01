@@ -172,7 +172,7 @@ export default function ShoppingList({ items, categories, locations = [], onUpda
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <button onClick={exportCSV}      className="flex items-center gap-1 px-3 py-2 rounded-xl font-sans font-bold text-xs text-mint-500 bg-mint-50 dark:bg-mint-500/10 border border-mint-200 dark:border-mint-500/20 hover:bg-mint-100 active:scale-95 transition-all" title="Download as Excel/CSV">
             📊 Excel
           </button>

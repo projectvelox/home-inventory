@@ -40,7 +40,7 @@ function ConfirmDialog({ message, onConfirm, onCancel, confirmLabel = 'Delete', 
 }
 
 // ─── Task Card ────────────────────────────────────────────────
-function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone, isOverdue }) {
+function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone, isOverdue, selectMode, isSelected, onSelect }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const meta     = catMeta(task.category || 'other')
   const isDone   = task.status === 'done'
@@ -48,70 +48,98 @@ function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone,
     ? new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null
 
+  function handleCardClick() {
+    if (selectMode) { onSelect?.(task.id); return }
+    onTap(task)
+  }
+
   return (
-    <div className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-card p-3.5 flex items-center gap-3 transition-all overflow-hidden ${isDone ? 'opacity-55' : 'hover:shadow-card-md'} ${isOverdue ? 'ring-1 ring-red-100 dark:ring-red-500/20' : ''}`}>
-      {isOverdue && <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-400 rounded-l-2xl" />}
+    <>
+      <div
+        className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-card p-3.5 flex items-center gap-3 transition-all overflow-hidden
+          ${isDone && !selectMode ? 'opacity-55' : ''}
+          ${!selectMode ? 'hover:shadow-card-md' : ''}
+          ${isOverdue ? 'ring-1 ring-red-100 dark:ring-red-500/20' : ''}
+          ${isSelected ? 'ring-2 ring-red-300 dark:ring-red-400' : ''}
+        `}
+        onClick={selectMode ? handleCardClick : undefined}
+      >
+        {isOverdue && <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-400 rounded-l-2xl" />}
 
-      {/* Quick-done circle (helper) or category emoji (admin/done) */}
-      {onQuickDone && !isDone ? (
-        <button
-          onClick={e => { e.stopPropagation(); onQuickDone(task.id) }}
-          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-gray-200 dark:border-gray-600 text-gray-300 hover:border-mint-400 hover:text-mint-400 hover:bg-mint-50 dark:hover:bg-mint-500/10 transition-all active:scale-95"
-          title="Mark done"
-          aria-label="Mark done"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
-      ) : (
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 ${isDone ? 'bg-mint-50 dark:bg-mint-500/10' : 'bg-blush-50 dark:bg-blush-500/10'}`}>
-          {isDone ? '✅' : meta.emoji}
-        </div>
-      )}
+        {/* Left slot: select checkbox | quick-done | category emoji */}
+        {selectMode ? (
+          <button
+            onClick={e => { e.stopPropagation(); onSelect?.(task.id) }}
+            className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all active:scale-90 ${
+              isSelected
+                ? 'bg-red-400 border-red-400 text-white'
+                : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700'
+            }`}
+            aria-label={isSelected ? 'Deselect' : 'Select'}
+          >
+            {isSelected && <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          </button>
+        ) : onQuickDone && !isDone ? (
+          <button
+            onClick={e => { e.stopPropagation(); onQuickDone(task.id) }}
+            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-gray-200 dark:border-gray-600 text-gray-300 hover:border-mint-400 hover:text-mint-400 hover:bg-mint-50 dark:hover:bg-mint-500/10 transition-all active:scale-95"
+            title="Mark done"
+            aria-label="Mark done"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+        ) : (
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 ${isDone ? 'bg-mint-50 dark:bg-mint-500/10' : 'bg-blush-50 dark:bg-blush-500/10'}`}>
+            {isDone ? '✅' : meta.emoji}
+          </div>
+        )}
 
-      {/* Content — tappable area */}
-      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onTap(task)}>
-        <p className={`font-sans font-semibold text-sm text-gray-700 dark:text-gray-100 leading-snug ${isDone ? 'line-through text-gray-400 dark:text-gray-500' : ''}`}>
-          {task.title}
-        </p>
-        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          {assigneeName && (
-            <span className="font-sans text-[10px] font-semibold text-lavender-500 bg-lavender-50 dark:bg-lavender-500/10 px-1.5 py-0.5 rounded-full">{assigneeName}</span>
-          )}
-          {task.recurType && task.recurType !== 'none' && (
-            <span className="font-sans text-[10px] font-semibold text-sky-500 bg-sky-50 dark:bg-sky-500/10 px-1.5 py-0.5 rounded-full">
-              🔁 {RECUR_META[task.recurType]?.short ?? task.recurType}
-            </span>
-          )}
-          {task.estimatedMins && !isDone && (
-            <span className="font-sans text-[10px] text-gray-400">⏱ {task.estimatedMins}m</span>
-          )}
-          {isDone && doneTime && (
-            <span className="font-sans text-[10px] text-mint-500 font-medium">✓ {doneTime}</span>
-          )}
-          {task.description && !isDone && (
-            <span className="font-sans text-[10px] text-gray-400 truncate max-w-[140px]">{task.description}</span>
-          )}
+        {/* Content — tappable area */}
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={handleCardClick}>
+          <p className={`font-sans font-semibold text-sm text-gray-700 dark:text-gray-100 leading-snug ${isDone && !selectMode ? 'line-through text-gray-400 dark:text-gray-500' : ''}`}>
+            {task.title}
+          </p>
+          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+            {assigneeName && (
+              <span className="font-sans text-[10px] font-semibold text-lavender-500 bg-lavender-50 dark:bg-lavender-500/10 px-1.5 py-0.5 rounded-full">{assigneeName}</span>
+            )}
+            {task.recurType && task.recurType !== 'none' && (
+              <span className="font-sans text-[10px] font-semibold text-sky-500 bg-sky-50 dark:bg-sky-500/10 px-1.5 py-0.5 rounded-full">
+                🔁 {RECUR_META[task.recurType]?.short ?? task.recurType}
+              </span>
+            )}
+            {task.estimatedMins && !isDone && (
+              <span className="font-sans text-[10px] text-gray-400">⏱ {task.estimatedMins}m</span>
+            )}
+            {isDone && doneTime && (
+              <span className="font-sans text-[10px] text-mint-500 font-medium">✓ {doneTime}</span>
+            )}
+            {task.description && !isDone && (
+              <span className="font-sans text-[10px] text-gray-400 truncate">{task.description}</span>
+            )}
+          </div>
         </div>
+
+        {/* Completion photo thumbnail — hidden in select mode */}
+        {!selectMode && isDone && task.completedPhoto && (
+          <img
+            src={task.completedPhoto}
+            alt="proof"
+            className="w-10 h-10 rounded-xl object-cover flex-shrink-0 cursor-pointer ring-2 ring-white dark:ring-gray-700"
+            onClick={() => onTap(task)}
+          />
+        )}
+
+        {/* Delete button — hidden in select mode */}
+        {canDelete && !selectMode && (
+          <button
+            onClick={e => { e.stopPropagation(); setConfirmDelete(true) }}
+            className="flex-shrink-0 w-9 h-9 rounded-full bg-red-50 dark:bg-red-500/10 text-red-300 dark:text-red-500/60 flex items-center justify-center hover:bg-red-100 hover:text-red-400 transition-all opacity-40 group-hover:opacity-100 focus:opacity-100"
+            aria-label="Delete task"
+          >✕</button>
+        )}
       </div>
-
-      {/* Completion photo thumbnail */}
-      {isDone && task.completedPhoto && (
-        <img
-          src={task.completedPhoto}
-          alt="proof"
-          className="w-10 h-10 rounded-xl object-cover flex-shrink-0 cursor-pointer ring-2 ring-white dark:ring-gray-700"
-          onClick={() => onTap(task)}
-        />
-      )}
-
-      {/* Delete — always visible at low opacity on mobile, full on hover/focus */}
-      {canDelete && (
-        <button
-          onClick={e => { e.stopPropagation(); setConfirmDelete(true) }}
-          className="flex-shrink-0 w-9 h-9 rounded-full bg-red-50 dark:bg-red-500/10 text-red-300 dark:text-red-500/60 flex items-center justify-center hover:bg-red-100 hover:text-red-400 transition-all opacity-40 group-hover:opacity-100 focus:opacity-100"
-          aria-label="Delete task"
-        >✕</button>
-      )}
+      {/* ConfirmDialog rendered outside the card so it's not clipped by overflow:hidden */}
       {confirmDelete && (
         <ConfirmDialog
           message={`Delete "${task.title}"?`}
@@ -119,7 +147,7 @@ function TaskCard({ task, onTap, onDelete, canDelete, assigneeName, onQuickDone,
           onCancel={() => setConfirmDelete(false)}
         />
       )}
-    </div>
+    </>
   )
 }
 
@@ -268,78 +296,81 @@ function TaskDetailSheet({ task, onClose, onReopen, onDelete, onEdit, onComplete
     ? new Date(task.dueDate + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
     : null
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-safe animate-slide-up max-h-[85dvh] overflow-y-auto">
-        <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-700 mx-auto mb-4" />
+    <>
+      <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-safe animate-slide-up max-h-[85dvh] overflow-y-auto">
+          <div className="w-10 h-1 rounded-full bg-gray-200 dark:bg-gray-700 mx-auto mb-4" />
 
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-blush-50 dark:bg-blush-500/10 flex items-center justify-center text-xl flex-shrink-0">
-            {isDone ? '✅' : meta.emoji}
-          </div>
-          <div className="flex-1">
-            <h3 className="font-sans font-bold text-base text-gray-800 dark:text-gray-100">{task.title}</h3>
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-sans font-bold text-white" style={{ backgroundColor: '#fda4af' }}>{meta.label}</span>
-              {dueDateDisplay && <span className="px-2 py-0.5 rounded-full text-[10px] font-sans bg-lavender-50 dark:bg-lavender-500/10 text-lavender-500 font-semibold">📅 {dueDateDisplay}</span>}
-              {assigneeName && <span className="px-2 py-0.5 rounded-full text-[10px] font-sans bg-lavender-50 dark:bg-lavender-500/10 text-lavender-500 font-semibold">👤 {assigneeName}</span>}
-              {task.estimatedMins && <span className="px-2 py-0.5 rounded-full text-[10px] font-sans bg-gray-100 dark:bg-gray-700 text-gray-500">⏱ {task.estimatedMins} min</span>}
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-sans font-bold ${isDone ? 'bg-mint-50 dark:bg-mint-500/10 text-mint-600' : 'bg-amber-50 dark:bg-amber-500/10 text-amber-500'}`}>
-                {isDone ? 'Done' : 'Pending'}
-              </span>
+          <div className="flex items-start gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-blush-50 dark:bg-blush-500/10 flex items-center justify-center text-xl flex-shrink-0">
+              {isDone ? '✅' : meta.emoji}
+            </div>
+            <div className="flex-1">
+              <h3 className="font-sans font-bold text-base text-gray-800 dark:text-gray-100">{task.title}</h3>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-sans font-bold text-white" style={{ backgroundColor: '#fda4af' }}>{meta.label}</span>
+                {dueDateDisplay && <span className="px-2 py-0.5 rounded-full text-[10px] font-sans bg-lavender-50 dark:bg-lavender-500/10 text-lavender-500 font-semibold">📅 {dueDateDisplay}</span>}
+                {assigneeName && <span className="px-2 py-0.5 rounded-full text-[10px] font-sans bg-lavender-50 dark:bg-lavender-500/10 text-lavender-500 font-semibold">👤 {assigneeName}</span>}
+                {task.estimatedMins && <span className="px-2 py-0.5 rounded-full text-[10px] font-sans bg-gray-100 dark:bg-gray-700 text-gray-500">⏱ {task.estimatedMins} min</span>}
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-sans font-bold ${isDone ? 'bg-mint-50 dark:bg-mint-500/10 text-mint-600' : 'bg-amber-50 dark:bg-amber-500/10 text-amber-500'}`}>
+                  {isDone ? 'Done' : 'Pending'}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {task.description && (
-          <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mb-3">{task.description}</p>
-        )}
+          {task.description && (
+            <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mb-3">{task.description}</p>
+          )}
 
-        {isDone && task.completedPhoto && (
-          <div className="mb-3 rounded-2xl overflow-hidden">
-            <img src={task.completedPhoto} alt="completion" className="w-full max-h-64 object-cover" />
+          {isDone && task.completedPhoto && (
+            <div className="mb-3 rounded-2xl overflow-hidden">
+              <img src={task.completedPhoto} alt="completion" className="w-full max-h-64 object-cover" />
+            </div>
+          )}
+          {isDone && task.completionNotes && (
+            <div className="bg-mint-50 dark:bg-mint-500/10 rounded-xl px-3 py-2.5 mb-3">
+              <p className="font-sans text-xs text-mint-600 dark:text-mint-400 font-semibold mb-0.5">Note</p>
+              <p className="font-sans text-sm text-gray-700 dark:text-gray-200">{task.completionNotes}</p>
+            </div>
+          )}
+          {isDone && task.completedAt && (
+            <p className="font-sans text-xs text-gray-400 mb-4">
+              Completed {new Date(task.completedAt).toLocaleString()}
+            </p>
+          )}
+
+          <div className="flex gap-2 flex-wrap">
+            {!isHelper && !readOnly && !isDone && onComplete && (
+              <button
+                onClick={async () => { await onComplete(task.id, {}); showToast?.('Task marked as done'); onClose() }}
+                className="flex-1 py-2.5 rounded-2xl font-sans font-bold text-sm text-white bg-gradient-to-r from-mint-400 to-mint-500 shadow hover:shadow-md transition-all"
+              >✓ Mark Done</button>
+            )}
+            {!isHelper && !readOnly && onEdit && (
+              <button
+                onClick={() => { onClose(); onEdit(task) }}
+                className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-lavender-500 bg-lavender-50 dark:bg-lavender-500/10 hover:bg-lavender-100 transition-all"
+              >✏️ Edit</button>
+            )}
+            {!isHelper && !readOnly && isDone && (
+              <button
+                onClick={() => { onReopen(task.id); showToast?.('Task reopened'); onClose() }}
+                className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-amber-500 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 transition-all"
+              >↩ Reopen</button>
+            )}
+            {!isHelper && !readOnly && (
+              <button
+                onClick={() => setConfirmDel(true)}
+                className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 transition-all"
+              >🗑 Delete</button>
+            )}
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-gray-500 bg-gray-100 dark:bg-gray-800 transition-all">Close</button>
           </div>
-        )}
-        {isDone && task.completionNotes && (
-          <div className="bg-mint-50 dark:bg-mint-500/10 rounded-xl px-3 py-2.5 mb-3">
-            <p className="font-sans text-xs text-mint-600 dark:text-mint-400 font-semibold mb-0.5">Note</p>
-            <p className="font-sans text-sm text-gray-700 dark:text-gray-200">{task.completionNotes}</p>
-          </div>
-        )}
-        {isDone && task.completedAt && (
-          <p className="font-sans text-xs text-gray-400 mb-4">
-            Completed {new Date(task.completedAt).toLocaleString()}
-          </p>
-        )}
-
-        <div className="flex gap-2 flex-wrap">
-          {!isHelper && !readOnly && !isDone && onComplete && (
-            <button
-              onClick={async () => { await onComplete(task.id, {}); showToast?.('Task marked as done'); onClose() }}
-              className="flex-1 py-2.5 rounded-2xl font-sans font-bold text-sm text-white bg-gradient-to-r from-mint-400 to-mint-500 shadow hover:shadow-md transition-all"
-            >✓ Mark Done</button>
-          )}
-          {!isHelper && !readOnly && !isDone && onEdit && (
-            <button
-              onClick={() => { onClose(); onEdit(task) }}
-              className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-lavender-500 bg-lavender-50 dark:bg-lavender-500/10 hover:bg-lavender-100 transition-all"
-            >✏️ Edit</button>
-          )}
-          {!isHelper && !readOnly && isDone && (
-            <button
-              onClick={() => { onReopen(task.id); showToast?.('Task reopened'); onClose() }}
-              className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-amber-500 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 transition-all"
-            >↩ Reopen</button>
-          )}
-          {!isHelper && !readOnly && (
-            <button
-              onClick={() => setConfirmDel(true)}
-              className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 transition-all"
-            >🗑 Delete</button>
-          )}
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-sans font-bold text-sm text-gray-500 bg-gray-100 dark:bg-gray-800 transition-all">Close</button>
         </div>
       </div>
+      {/* ConfirmDialog outside the z-50 wrapper so its z-[60] applies at the root stacking context */}
       {confirmDel && (
         <ConfirmDialog
           message={`Delete "${task.title}"?`}
@@ -347,7 +378,7 @@ function TaskDetailSheet({ task, onClose, onReopen, onDelete, onEdit, onComplete
           onCancel={() => setConfirmDel(false)}
         />
       )}
-    </div>
+    </>
   )
 }
 
@@ -409,7 +440,7 @@ function CreateTaskSheet({ helperProfiles, existing, onSave, onClose }) {
             placeholder="Description (optional)" rows={2} maxLength={500}
             className="w-full rounded-xl border-2 border-gray-100 dark:border-gray-700 px-3 py-2.5 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none focus:border-blush-200 resize-none"
           />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
             <div>
               <label className="font-sans text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">Category</label>
               <select
@@ -430,7 +461,7 @@ function CreateTaskSheet({ helperProfiles, existing, onSave, onClose }) {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
             {helperProfiles.length > 0 && (
               <div>
                 <label className="font-sans text-xs font-semibold text-gray-500 dark:text-gray-400 block mb-1">Assign to</label>
@@ -590,29 +621,39 @@ function CreateTemplateSheet({ existing, onSave, onClose }) {
             <p className="font-sans text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Task Steps</p>
             <div className="space-y-2">
               {items.map((item, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <span className="font-sans text-xs font-bold text-gray-300 w-5 text-center">{idx + 1}</span>
+                <div key={idx} className="rounded-2xl border-2 border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-3">
+                  {/* Row 1: step label + delete */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-sans text-xs font-bold text-gray-400 dark:text-gray-500">Step {idx + 1}</span>
+                    {items.length > 1 && (
+                      <button type="button" onClick={() => removeItem(idx)} className="w-6 h-6 rounded-full bg-red-50 dark:bg-red-500/10 text-red-400 text-xs flex items-center justify-center hover:bg-red-100 flex-shrink-0">✕</button>
+                    )}
+                  </div>
+                  {/* Row 2: full-width title */}
                   <input
                     type="text" value={item.title} onChange={e => updateItem(idx, 'title', e.target.value)}
                     placeholder="Task name" maxLength={200}
-                    className="flex-1 rounded-xl border-2 border-gray-100 dark:border-gray-700 px-3 py-2 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none focus:border-blush-200"
+                    className="w-full rounded-xl border-2 border-gray-100 dark:border-gray-700 px-3 py-2 font-sans text-sm bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:border-blush-200 mb-2"
                   />
-                  <select
-                    value={item.category} onChange={e => updateItem(idx, 'category', e.target.value)}
-                    className="rounded-xl border-2 border-gray-100 dark:border-gray-700 px-2 py-2 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none w-20"
-                  >
-                    {Object.entries(CATEGORY_META).map(([k, v]) => (
-                      <option key={k} value={k}>{v.emoji}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="number" min="1" max="480" value={item.estimatedMins} onChange={e => updateItem(idx, 'estimatedMins', e.target.value)}
-                    placeholder="min" title="Estimated minutes"
-                    className="w-16 rounded-xl border-2 border-gray-100 dark:border-gray-700 px-2 py-2 font-sans text-sm dark:bg-gray-800 dark:text-white focus:outline-none"
-                  />
-                  {items.length > 1 && (
-                    <button type="button" onClick={() => removeItem(idx)} className="w-7 h-7 rounded-full bg-red-50 dark:bg-red-500/10 text-red-400 text-xs flex items-center justify-center hover:bg-red-100 flex-shrink-0">✕</button>
-                  )}
+                  {/* Row 3: category + estimated mins */}
+                  <div className="flex gap-2">
+                    <select
+                      value={item.category} onChange={e => updateItem(idx, 'category', e.target.value)}
+                      className="flex-1 rounded-xl border-2 border-gray-100 dark:border-gray-700 px-2 py-2 font-sans text-sm bg-white dark:bg-gray-800 dark:text-white focus:outline-none"
+                    >
+                      {Object.entries(CATEGORY_META).map(([k, v]) => (
+                        <option key={k} value={k}>{v.emoji} {v.label}</option>
+                      ))}
+                    </select>
+                    <div className="relative flex items-center">
+                      <input
+                        type="number" min="1" max="480" value={item.estimatedMins} onChange={e => updateItem(idx, 'estimatedMins', e.target.value)}
+                        placeholder="—" title="Estimated minutes"
+                        className="w-20 rounded-xl border-2 border-gray-100 dark:border-gray-700 pl-2 pr-7 py-2 font-sans text-sm bg-white dark:bg-gray-800 dark:text-white focus:outline-none"
+                      />
+                      <span className="absolute right-2 font-sans text-xs text-gray-400 pointer-events-none">min</span>
+                    </div>
+                  </div>
                 </div>
               ))}
               <button
@@ -838,11 +879,28 @@ function HelperView({ user, tasks, onComplete }) {
 }
 
 // ─── Manager: Schedule Tab ────────────────────────────────────
-function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComplete, onReopen, onDelete, showToast }) {
-  const [selected,      setSelected]      = useState(null)
-  const [editingTask,   setEditingTask]   = useState(null)
-  const [createDate,    setCreateDate]    = useState(null)
-  const [filterHelper,  setFilterHelper]  = useState('all') // 'all' | helper id
+function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComplete, onReopen, onDelete, onDeleteMultiple, showToast }) {
+  const [selected,              setSelected]              = useState(null)
+  const [editingTask,           setEditingTask]           = useState(null)
+  const [createDate,            setCreateDate]            = useState(null)
+  const [filterHelper,          setFilterHelper]          = useState('all')
+  const [selectMode,            setSelectMode]            = useState(false)
+  const [selectedIds,           setSelectedIds]           = useState(new Set())
+  const [confirmDeleteAll,      setConfirmDeleteAll]      = useState(false)
+  const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false)
+
+  function toggleSelect(id) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false)
+    setSelectedIds(new Set())
+  }
 
   const today    = localToday()
   const tomorrow = useMemo(() => {
@@ -890,6 +948,42 @@ function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComp
   return (
     <div className="space-y-6">
 
+      {/* Select / Delete-all controls */}
+      {tasks.length > 0 && (
+        <div className="flex items-center justify-between -mb-2">
+          {selectMode ? (
+            <>
+              <span className="font-sans text-sm font-semibold text-gray-500 dark:text-gray-400">
+                {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Tap tasks to select'}
+              </span>
+              <div className="flex gap-2">
+                {selectedIds.size > 0 && (
+                  <button
+                    onClick={() => setConfirmDeleteSelected(true)}
+                    className="px-3 py-1.5 rounded-xl font-sans font-bold text-xs text-white bg-red-400 hover:bg-red-500 active:scale-95 transition-all"
+                  >Delete ({selectedIds.size})</button>
+                )}
+                <button
+                  onClick={exitSelectMode}
+                  className="px-3 py-1.5 rounded-xl font-sans font-bold text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 transition-all"
+                >Cancel</button>
+              </div>
+            </>
+          ) : (
+            <div className="flex gap-2 ml-auto">
+              <button
+                onClick={() => setSelectMode(true)}
+                className="px-3 py-1.5 rounded-xl font-sans font-bold text-xs text-gray-500 bg-white dark:bg-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
+              >Select</button>
+              <button
+                onClick={() => setConfirmDeleteAll(true)}
+                className="px-3 py-1.5 rounded-xl font-sans font-bold text-xs text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 transition-all"
+              >🗑 Delete All</button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Helper filter pills — sticky at top while scrolling */}
       {helperProfiles.length > 0 && (
         <div className="sticky top-0 z-10 -mx-4 px-4 py-2 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm -mb-2">
@@ -930,6 +1024,7 @@ function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComp
                   <TaskCard
                     task={t} onTap={setSelected} onDelete={onDelete} canDelete isOverdue
                     assigneeName={t.assignedTo ? assigneeMap[t.assignedTo] : null}
+                    selectMode={selectMode} isSelected={selectedIds.has(t.id)} onSelect={toggleSelect}
                   />
                 </div>
               )
@@ -985,6 +1080,7 @@ function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComp
                   <TaskCard
                     key={t.id} task={t} onTap={setSelected} onDelete={onDelete} canDelete
                     assigneeName={t.assignedTo ? assigneeMap[t.assignedTo] : null}
+                    selectMode={selectMode} isSelected={selectedIds.has(t.id)} onSelect={toggleSelect}
                   />
                 ))}
                 {pending.length > 0 && done.length > 0 && (
@@ -998,6 +1094,7 @@ function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComp
                   <TaskCard
                     key={t.id} task={t} onTap={setSelected} onDelete={onDelete} canDelete
                     assigneeName={t.assignedTo ? assigneeMap[t.assignedTo] : null}
+                    selectMode={selectMode} isSelected={selectedIds.has(t.id)} onSelect={toggleSelect}
                   />
                 ))}
               </div>
@@ -1012,7 +1109,7 @@ function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComp
         className="w-full py-3 rounded-2xl font-sans font-bold text-sm text-blush-400 bg-blush-50 dark:bg-blush-500/10 border-2 border-dashed border-blush-200 dark:border-blush-500/20 hover:bg-blush-100 transition-all"
       >+ Add Task for Today</button>
 
-      {selected && (
+      {selected && !selectMode && (
         <TaskDetailSheet
           task={selected}
           onClose={() => setSelected(null)}
@@ -1042,6 +1139,31 @@ function ScheduleTab({ tasks, helperProfiles, onCreateTask, onUpdateTask, onComp
             return result
           }}
           onClose={() => setEditingTask(null)}
+        />
+      )}
+      {confirmDeleteAll && (
+        <ConfirmDialog
+          message={`Delete ALL ${tasks.length} task${tasks.length !== 1 ? 's' : ''}? This cannot be undone.`}
+          confirmLabel="Delete All"
+          onConfirm={() => {
+            onDeleteMultiple(tasks.map(t => t.id))
+            setConfirmDeleteAll(false)
+            showToast?.(`🗑 Deleted all ${tasks.length} tasks`)
+          }}
+          onCancel={() => setConfirmDeleteAll(false)}
+        />
+      )}
+      {confirmDeleteSelected && (
+        <ConfirmDialog
+          message={`Delete ${selectedIds.size} selected task${selectedIds.size !== 1 ? 's' : ''}?`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            onDeleteMultiple([...selectedIds])
+            showToast?.(`🗑 Deleted ${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''}`)
+            setConfirmDeleteSelected(false)
+            exitSelectMode()
+          }}
+          onCancel={() => setConfirmDeleteSelected(false)}
         />
       )}
     </div>
@@ -1422,7 +1544,7 @@ export default function TasksPage({ user, showToast }) {
   const isAdmin = user?.role === 'admin'
   const {
     tasks, templates, helperProfiles, loading,
-    createTask, completeTask, reopenTask, deleteTask, updateTask,
+    createTask, completeTask, reopenTask, deleteTask, deleteMultipleTasks, updateTask,
     createTemplate, updateTemplate, deleteTemplate, assignTemplate,
     autoAssignDueTemplates,
   } = useTasks(user?.id, user?.role)
@@ -1514,6 +1636,7 @@ export default function TasksPage({ user, showToast }) {
           onComplete={completeTask}
           onReopen={reopenTask}
           onDelete={deleteTask}
+          onDeleteMultiple={deleteMultipleTasks}
           showToast={showToast}
         />
       )}

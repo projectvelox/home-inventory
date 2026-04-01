@@ -45,7 +45,7 @@ export default function Header({ view, lowStockCount, user, onLogout, dark, onTo
               className="flex items-center gap-1.5 bg-gradient-to-r from-blush-50 to-lavender-50 dark:from-blush-500/10 dark:to-lavender-500/10 border border-blush-100 dark:border-blush-500/20 rounded-full pl-1.5 pr-3 py-1 hover:brightness-95 active:scale-95 transition-all"
             >
               <span className="text-base leading-none">{user.avatar}</span>
-              <span className="font-sans text-[11px] font-bold text-blush-400 max-w-[64px] truncate leading-none">
+              <span className="font-sans text-[11px] font-bold text-blush-400 max-w-[96px] truncate leading-none">
                 {user.displayName?.split(' ')[0]}
               </span>
             </button>

@@ -166,7 +166,7 @@ const ItemCard = memo(function ItemCard({ item, category, location, onEdit, onDe
                 </span>
               )}
               {(location || item.location) && (
-                <span className="text-[10px] font-sans text-gray-400 truncate max-w-[100px]">
+                <span className="text-[10px] font-sans text-gray-400 truncate max-w-[140px]">
                   📍 {location?.name ?? item.location}
                 </span>
               )}

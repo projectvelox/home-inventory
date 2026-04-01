@@ -186,14 +186,18 @@ export default function WishlistPage({ items, categories, loading, onAdd, onDele
               const isPromoting = saving === item.id
               return (
                 <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-card p-3 flex items-start gap-3 animate-fade-in">
-                  {/* Priority dot */}
-                  <div className="flex-shrink-0 mt-1">
-                    <select
-                      value={item.priority}
-                      onChange={e => onUpdatePriority(item.id, e.target.value)}
-                      className="appearance-none w-5 h-5 rounded-full cursor-pointer focus:outline-none"
-                      style={{ background: meta.dot.replace('bg-', '').includes('red') ? '#f87171' : meta.dot.replace('bg-', '').includes('peach') ? '#fb923c' : '#4ade80' }}
-                      aria-label="Change priority"
+                  {/* Priority dot — tap to cycle high→medium→low */}
+                  <div className="flex-shrink-0 mt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const ORDER = ['high', 'medium', 'low']
+                        const next = ORDER[(ORDER.indexOf(item.priority) + 1) % ORDER.length]
+                        onUpdatePriority(item.id, next)
+                      }}
+                      title={`Priority: ${meta.label} — tap to change`}
+                      aria-label={`Priority: ${meta.label}. Tap to change.`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-all ${meta.dot}`}
                     />
                   </div>
 

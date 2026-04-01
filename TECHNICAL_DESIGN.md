@@ -1,6 +1,6 @@
 ---
 title: "My Home Haven"
-subtitle: "Technical Design Document - v3.2.1"
+subtitle: "Technical Design Document - v3.2.4"
 author: "Development Team"
 date: "29 March 2026"
 ---
@@ -8,7 +8,7 @@ date: "29 March 2026"
 | | |
 |---|---|
 | **Project** | My Home Haven - Household Inventory PWA |
-| **Current Version** | 3.2.1 |
+| **Current Version** | 3.2.4 |
 | **Document Status** | Living Document - updated with every release |
 | **Last Updated** | 29 March 2026 |
 | **Author** | Development Team |
@@ -501,6 +501,9 @@ useAuth overhaul: login() no longer blocks on profile fetch — signInWithPasswo
 **v3.2.1**
 Fix Supabase Web Lock contention: supabase.js now passes a no-op lock function so the auth client bypasses navigator.locks entirely. Eliminates "lock was stolen" errors that appeared when two tabs (or a cached page + new deploy) initialized simultaneously — the error was causing signInWithPassword to throw even when the HTTP request succeeded, making the app show "Wrong password" for a correct login.
 
+**v3.2.2**
+CreateTemplateSheet task steps redesigned from a cramped single-row layout to a vertical card layout. Each step is now a rounded card with: a "Step N" header + delete button row, a full-width title input, and a second row with the category dropdown (emoji + label) and estimated minutes field side by side. Eliminates text truncation on mobile and desktop.
+
 ---
 
 ## Appendix B: Feature Reference Matrix
@@ -534,6 +537,9 @@ Fix Supabase Web Lock contention: supabase.js now passes a no-op lock function s
 
 | Version | Date | Summary |
 |---------|------|---------|
+| 3.2.4 | 2026-03-29 | Task management: Delete All + multi-select delete in ScheduleTab; ConfirmDialog moved outside fixed z-50 wrapper in TaskDetailSheet and TaskCard so z-[60] applies at root stacking context (fixes modal appearing behind sheet on completed tasks); Edit button now available on completed tasks (not just pending); useTasks gains deleteMultipleTasks(ids) for batch Supabase delete. |
+| 3.2.3 | 2026-03-29 | Comprehensive UI/UX audit fixes: WishlistPage priority dot replaced with tappable cycle-button (was 20px select — unusable on mobile); CategoryModal and LocationsManager fully dark-mode styled; Header display name max-width increased (64→96px); TaskCard description no longer hard-capped at 140px; ItemCard location label widened (100→140px); ShoppingList export buttons wrap on narrow screens; CreateTaskSheet category/assign grids stack on xs screens. |
+| 3.2.2 | 2026-03-29 | CreateTemplateSheet task steps redesigned to vertical card layout — full-width title input per step eliminates truncation on mobile and desktop. |
 | 3.0.0 | 2026-03-29 | Comprehensive edge-case hardening: ConfirmDialog (replaces browser confirm), photo type validation, form backdrop/cancel guards, completeTask rollback, loadTasks race condition fix, estimatedMins safety, null guards throughout. |
 | 2.9.0 | 2026-03-29 | Fix: History tab now includes today's completed tasks (not just past days); full-width photo banner on completed tasks with proof photos; "With Photos" filter toggle; 📷 N badge on History tab; completion notes preview inline. |
 | 2.8.0 | 2026-03-29 | Rename "Helper" → "Member" in all UI labels (login screen, sidebar, member dashboard); Daddy Jo, Nene Ella, Wowa Grace promoted to admin in users.js; SQL migration + admin-override RLS policy for future role changes via script. |

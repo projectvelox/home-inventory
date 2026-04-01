@@ -217,6 +217,12 @@ export function useTasks(userId, role) {
     await supabase.from('tasks').delete().eq('id', id)
   }
 
+  async function deleteMultipleTasks(ids) {
+    if (!ids || ids.length === 0) return
+    setTasks(prev => prev.filter(t => !ids.includes(t.id)))
+    await supabase.from('tasks').delete().in('id', ids)
+  }
+
   async function updateTask(id, taskData) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...taskData } : t))
     const { error } = await supabase.from('tasks').update({
@@ -390,7 +396,7 @@ export function useTasks(userId, role) {
 
   return {
     tasks, templates, helperProfiles, loading,
-    createTask, completeTask, reopenTask, deleteTask, updateTask,
+    createTask, completeTask, reopenTask, deleteTask, deleteMultipleTasks, updateTask,
     createTemplate, updateTemplate, deleteTemplate, assignTemplate,
     autoAssignDueTemplates,
   }
